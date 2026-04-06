@@ -93,7 +93,7 @@ class Player:
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
         if self.map_mode == "tight":
-            cap = 5 if rnd <= 20 else (8 if rnd <= 100 else 15)
+            cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (6 if rnd <= 150 else (12 if rnd <= 400 else 16))
         else:  # balanced
@@ -115,14 +115,6 @@ class Player:
             time_floor = min(6 + rnd // 200, 10)
         econ_cap = max(time_floor, vis_harv * 3 + 4)
         cap = min(cap, econ_cap)
-        # High-bank override: only on expand maps where more ore exists
-        if self.map_mode == "expand":
-            ti_now = c.get_global_resources()[0]
-            if ti_now > 500:
-                cap = cap + 2
-            if ti_now > 1000:
-                cap = cap + 3  # total +5 from base
-            cap = min(cap, 25)
         if units >= cap:
             return
         ti = c.get_global_resources()[0]
@@ -248,7 +240,10 @@ class Player:
         # Early barrier anti-rush: builder places 1-2 barriers near core
         # Tight maps: second+ builder (id%5!=0) places barrier as first action
         # Other maps: wait for 1+ harvester first
-        early_barrier_ok = self.harvesters_built >= 1
+        early_barrier_ok = (
+            (map_mode == "tight" and rnd >= 5 and (self.my_id or 0) % 5 != 0)
+            or self.harvesters_built >= 1
+        )
         if (rnd <= 30 and self.core_pos
                 and early_barrier_ok
                 and not hasattr(self, '_early_barriers')
@@ -822,6 +817,17 @@ class Player:
 
         if self._ax_step == 0:
             my_team = c.get_team()
+            # Skip if an allied foundry already exists (another builder built one)
+            import sys as _sys
+            for eid in c.get_nearby_buildings():
+                try:
+                    if (c.get_entity_type(eid) == EntityType.FOUNDRY
+                            and c.get_team(eid) == my_team):
+                        print(f"[AX] SKIP: foundry {eid} at {c.get_position(eid)}", file=_sys.stderr)
+                        self._ax_done = True
+                        return False
+                except Exception:
+                    pass
             # Find allied harvesters on ORE_AXIONITE
             ax_harvs = []
             for eid in c.get_nearby_buildings():
@@ -843,7 +849,11 @@ class Player:
                 self._walk_to(c, pos, self.core_pos)
                 return True
 
-            # Find a conveyor between any Ax harvester and core, prefer close to core
+            # Find a conveyor close to core to replace with foundry.
+            # Near core, chains merge so the foundry gets both Ti + Ax stacks.
+            # Must be within 8 r^2 of core (action range) to ensure it's on a
+            # merged chain section, AND within 20 r^2 of an Ax harvester to
+            # ensure Ax reaches it.
             best_conv = None
             best_score = 10**9
             for eid in c.get_nearby_buildings():
@@ -854,13 +864,34 @@ class Player:
                         continue
                     cpos = c.get_position(eid)
                     core_dist = cpos.distance_squared(self.core_pos)
-                    # Must be near an Ax harvester chain (within 20 r^2)
+                    if core_dist > 8:  # must be very close to core
+                        continue
+                    # Must be reachable from an Ax harvester chain
                     near_ax = any(cpos.distance_squared(h) <= 20 for h in ax_harvs)
                     if near_ax and core_dist < best_score:
                         best_score = core_dist
                         best_conv = cpos
                 except Exception:
                     pass
+            if best_conv is None:
+                print(f"[AX] No conv near core (r^2<=8), trying adjacent to harvester", file=_sys.stderr)
+                # Fallback: try adjacent to Ax harvester
+                for hpos in ax_harvs:
+                    for d in DIRS:
+                        cp = hpos.add(d)
+                        try:
+                            if not c.is_in_vision(cp):
+                                continue
+                            bid = c.get_tile_building_id(cp)
+                            if bid is None or c.get_team(bid) != my_team:
+                                continue
+                            if c.get_entity_type(bid) == EntityType.CONVEYOR:
+                                cdist = cp.distance_squared(self.core_pos)
+                                if cdist < best_score:
+                                    best_score = cdist
+                                    best_conv = cp
+                        except Exception:
+                            pass
             if best_conv is None:
                 self._ax_done = True
                 return False
@@ -885,14 +916,19 @@ class Player:
                 self._walk_to(c, pos, self._ax_foundry_pos)
                 return True
             try:
+                import sys
                 if c.can_destroy(self._ax_foundry_pos):
                     c.destroy(self._ax_foundry_pos)
+                    print(f"[AX] DESTROYED conveyor at {self._ax_foundry_pos}", file=sys.stderr)
                 if c.can_build_foundry(self._ax_foundry_pos):
                     c.build_foundry(self._ax_foundry_pos)
+                    print(f"[AX] BUILT FOUNDRY at {self._ax_foundry_pos}!", file=sys.stderr)
                     self._ax_done = True
                 else:
+                    print(f"[AX] CANNOT build foundry at {self._ax_foundry_pos}", file=sys.stderr)
                     self._ax_done = True
-            except Exception:
+            except Exception as e:
+                print(f"[AX] EXCEPTION in step 2: {e}", file=sys.stderr)
                 self._ax_done = True
             return True
 
