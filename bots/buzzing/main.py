@@ -450,6 +450,9 @@ class Player:
                 else:
                     core_dist = t.distance_squared(self.core_pos) if self.core_pos else 0
                     score = builder_dist + core_dist * 2
+                # Strongly prefer Ti — raw Ax to core is DESTROYED (wastes harvester)
+                if c.get_tile_env(t) == Environment.ORE_AXIONITE:
+                    score += 50000
                 # Prefer unclaimed tiles: penalize ore with another builder's marker
                 if t != self._claimed_pos:
                     bid = c.get_tile_building_id(t)
@@ -1124,10 +1127,8 @@ class Player:
                 if c.get_team(eid) == my_team:
                     continue
                 etype = c.get_entity_type(eid)
-                if etype == EntityType.CORE:
-                    continue  # skip core, too much HP
                 epos = c.get_position(eid)
-                pri = PRIORITY.get(etype, 9)
+                pri = 99 if etype == EntityType.CORE else PRIORITY.get(etype, 9)
                 dist = pos.distance_squared(epos)
                 score = pri * 1000 + dist
                 if score < best_score:
@@ -1269,6 +1270,9 @@ class Player:
             p = pos.add(d)
             if c.can_build_harvester(p):
                 dist = p.distance_squared(self.core_pos) if self.core_pos else 0
+                # Strongly prefer Ti ore — raw Ax delivered to core is DESTROYED
+                if c.get_tile_env(p) == Environment.ORE_AXIONITE:
+                    dist += 100000
                 if dist < bd:
                     best, bd = p, dist
         return best
