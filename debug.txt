@@ -1,0 +1,147 @@
+R7: chain pos=Position(x=13, y=16) prev=None steps=0 stuck=1
+R9: chain pos=Position(x=12, y=17) prev=Position(x=13, y=16) steps=1 stuck=1
+R11: chain pos=Position(x=14, y=16) prev=None steps=0 stuck=1
+R12: chain pos=Position(x=13, y=16) prev=Position(x=14, y=16) steps=1 stuck=0
+R13: chain pos=Position(x=12, y=17) prev=Position(x=13, y=16) steps=2 stuck=0
+R18: chain pos=Position(x=15, y=16) prev=None steps=0 stuck=1
+R19: chain pos=Position(x=15, y=16) prev=None steps=1 stuck=2
+R20: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=2 stuck=0
+R21: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=3 stuck=0
+R22: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=4 stuck=0
+R23: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=5 stuck=0
+R24: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=6 stuck=0
+R25: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=7 stuck=0
+R26: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=8 stuck=0
+R27: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=9 stuck=0
+R28: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=10 stuck=0
+R29: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=11 stuck=0
+R30: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=12 stuck=0
+R31: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=13 stuck=0
+R32: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=14 stuck=0
+R33: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=15 stuck=0
+R34: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=16 stuck=0
+R35: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=17 stuck=0
+R36: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=18 stuck=0
+R37: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=19 stuck=0
+R38: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=20 stuck=0
+R39: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=21 stuck=0
+R40: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=22 stuck=0
+R41: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=23 stuck=0
+R42: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=24 stuck=0
+R43: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=25 stuck=0
+R43: chain pos=Position(x=15, y=25) prev=None steps=0 stuck=1
+R44: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=26 stuck=0
+R44: chain pos=Position(x=16, y=24) prev=Position(x=15, y=25) steps=1 stuck=0
+R45: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=27 stuck=0
+R45: chain pos=Position(x=16, y=23) prev=Position(x=16, y=24) steps=2 stuck=0
+R46: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=28 stuck=0
+R46: chain pos=Position(x=15, y=22) prev=Position(x=16, y=23) steps=3 stuck=0
+R47: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=29 stuck=0
+R47: chain pos=Position(x=14, y=21) prev=Position(x=15, y=22) steps=4 stuck=0
+R48: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=30 stuck=0
+R48: chain pos=Position(x=13, y=20) prev=Position(x=14, y=21) steps=5 stuck=0
+R49: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=31 stuck=0
+R49: chain pos=Position(x=3, y=22) prev=None steps=0 stuck=1
+R49: chain pos=Position(x=12, y=19) prev=Position(x=13, y=20) steps=6 stuck=0
+R50: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=32 stuck=0
+R50: chain pos=Position(x=3, y=22) prev=None steps=1 stuck=2
+R51: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=33 stuck=0
+R51: chain pos=Position(x=4, y=22) prev=Position(x=3, y=22) steps=2 stuck=0
+R52: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=34 stuck=0
+R52: chain pos=Position(x=4, y=22) prev=None steps=3 stuck=1
+R53: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=35 stuck=0
+R53: chain pos=Position(x=4, y=22) prev=None steps=4 stuck=2
+R54: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=36 stuck=0
+R54: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=5 stuck=0
+R55: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=37 stuck=0
+R55: chain pos=Position(x=5, y=22) prev=None steps=6 stuck=1
+R56: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=38 stuck=0
+R56: chain pos=Position(x=5, y=22) prev=None steps=7 stuck=2
+R57: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=39 stuck=0
+R57: chain pos=Position(x=5, y=22) prev=None steps=8 stuck=3
+R58: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=40 stuck=0
+R58: chain pos=Position(x=5, y=22) prev=None steps=9 stuck=4
+R59: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=41 stuck=0
+R59: chain pos=Position(x=5, y=22) prev=None steps=10 stuck=5
+R60: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=42 stuck=0
+R60: chain pos=Position(x=5, y=22) prev=None steps=11 stuck=6
+R61: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=43 stuck=0
+R61: chain pos=Position(x=5, y=22) prev=None steps=12 stuck=7
+R62: chain pos=Position(x=14, y=16) prev=Position(x=15, y=16) steps=44 stuck=0
+R62: chain pos=Position(x=5, y=22) prev=None steps=13 stuck=8
+R63: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=45 stuck=0
+R63: chain pos=Position(x=5, y=22) prev=None steps=14 stuck=9
+R64: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=46 stuck=0
+R64: chain pos=Position(x=5, y=22) prev=None steps=15 stuck=10
+R65: chain pos=Position(x=15, y=17) prev=Position(x=15, y=16) steps=47 stuck=0
+R65: chain pos=Position(x=5, y=22) prev=None steps=16 stuck=11
+R65: chain pos=Position(x=15, y=26) prev=None steps=0 stuck=1
+R66: chain pos=Position(x=14, y=16) prev=Position(x=15, y=17) steps=48 stuck=0
+R66: chain pos=Position(x=16, y=25) prev=Position(x=15, y=26) steps=1 stuck=0
+R67: chain pos=Position(x=15, y=17) prev=Position(x=14, y=16) steps=49 stuck=0
+R67: chain pos=Position(x=16, y=24) prev=Position(x=16, y=25) steps=2 stuck=0
+R68: chain pos=Position(x=15, y=16) prev=Position(x=15, y=17) steps=50 stuck=0
+R68: chain pos=Position(x=16, y=23) prev=Position(x=16, y=24) steps=3 stuck=0
+R69: chain pos=Position(x=15, y=22) prev=Position(x=16, y=23) steps=4 stuck=0
+R70: chain pos=Position(x=14, y=21) prev=Position(x=15, y=22) steps=5 stuck=0
+R71: chain pos=Position(x=13, y=20) prev=Position(x=14, y=21) steps=6 stuck=0
+R72: chain pos=Position(x=12, y=19) prev=Position(x=13, y=20) steps=7 stuck=0
+R76: chain pos=Position(x=3, y=26) prev=None steps=0 stuck=1
+R77: chain pos=Position(x=4, y=25) prev=Position(x=3, y=26) steps=1 stuck=0
+R78: chain pos=Position(x=4, y=24) prev=Position(x=4, y=25) steps=2 stuck=0
+R79: chain pos=Position(x=3, y=23) prev=Position(x=4, y=24) steps=3 stuck=0
+R80: chain pos=Position(x=4, y=22) prev=Position(x=3, y=23) steps=4 stuck=0
+R81: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=5 stuck=0
+R82: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=6 stuck=1
+R83: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=7 stuck=2
+R84: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=8 stuck=3
+R85: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=9 stuck=4
+R86: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=10 stuck=5
+R87: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=11 stuck=6
+R88: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=12 stuck=7
+R89: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=13 stuck=8
+R90: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=14 stuck=9
+R91: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=15 stuck=10
+R92: chain pos=Position(x=5, y=22) prev=Position(x=4, y=22) steps=16 stuck=11
+R103: chain pos=Position(x=26, y=26) prev=None steps=0 stuck=1
+R104: chain pos=Position(x=25, y=27) prev=Position(x=26, y=26) steps=1 stuck=0
+R105: chain pos=Position(x=24, y=28) prev=Position(x=25, y=27) steps=2 stuck=0
+R106: chain pos=Position(x=23, y=29) prev=Position(x=24, y=28) steps=3 stuck=0
+R107: chain pos=Position(x=22, y=29) prev=Position(x=23, y=29) steps=4 stuck=0
+R108: chain pos=Position(x=21, y=28) prev=Position(x=22, y=29) steps=5 stuck=0
+R109: chain pos=Position(x=20, y=27) prev=Position(x=21, y=28) steps=6 stuck=0
+R110: chain pos=Position(x=19, y=26) prev=Position(x=20, y=27) steps=7 stuck=0
+R111: chain pos=Position(x=18, y=25) prev=Position(x=19, y=26) steps=8 stuck=0
+R112: chain pos=Position(x=17, y=24) prev=Position(x=18, y=25) steps=9 stuck=0
+R113: chain pos=Position(x=16, y=23) prev=Position(x=17, y=24) steps=10 stuck=0
+R114: chain pos=Position(x=15, y=22) prev=Position(x=16, y=23) steps=11 stuck=0
+R115: chain pos=Position(x=14, y=21) prev=Position(x=15, y=22) steps=12 stuck=0
+R116: chain pos=Position(x=13, y=20) prev=Position(x=14, y=21) steps=13 stuck=0
+R117: chain pos=Position(x=12, y=19) prev=Position(x=13, y=20) steps=14 stuck=0
+R324: chain pos=Position(x=14, y=1) prev=None steps=0 stuck=1
+R325: chain pos=Position(x=13, y=2) prev=Position(x=14, y=1) steps=1 stuck=0
+R326: chain pos=Position(x=13, y=3) prev=Position(x=13, y=2) steps=2 stuck=0
+R327: chain pos=Position(x=13, y=4) prev=Position(x=13, y=3) steps=3 stuck=0
+R328: chain pos=Position(x=14, y=4) prev=Position(x=13, y=4) steps=4 stuck=0
+R329: chain pos=Position(x=15, y=4) prev=Position(x=14, y=4) steps=5 stuck=0
+R330: chain pos=Position(x=16, y=5) prev=Position(x=15, y=4) steps=6 stuck=0
+R331: chain pos=Position(x=16, y=6) prev=Position(x=16, y=5) steps=7 stuck=0
+R332: chain pos=Position(x=15, y=7) prev=Position(x=16, y=6) steps=8 stuck=0
+R333: chain pos=Position(x=14, y=8) prev=Position(x=15, y=7) steps=9 stuck=0
+R334: chain pos=Position(x=13, y=9) prev=Position(x=14, y=8) steps=10 stuck=0
+R335: chain pos=Position(x=13, y=10) prev=Position(x=13, y=9) steps=11 stuck=0
+R336: chain pos=Position(x=13, y=11) prev=Position(x=13, y=10) steps=12 stuck=0
+R337: chain pos=Position(x=13, y=12) prev=Position(x=13, y=11) steps=13 stuck=0
+R338: chain pos=Position(x=12, y=13) prev=Position(x=13, y=12) steps=14 stuck=0
+R339: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=15 stuck=0
+R340: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=16 stuck=1
+R341: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=17 stuck=2
+R342: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=18 stuck=3
+R343: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=19 stuck=4
+R344: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=20 stuck=5
+R345: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=21 stuck=6
+R346: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=22 stuck=7
+R347: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=23 stuck=8
+R348: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=24 stuck=9
+R349: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=25 stuck=10
+R350: chain pos=Position(x=11, y=14) prev=Position(x=12, y=13) steps=26 stuck=11

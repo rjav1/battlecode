@@ -1,0 +1,3 @@
+[DEBUG round 6] wall_density=0.2029 ore_density=0.0000 map_mode=balanced is_maze=True
+[DEBUG round 6] wall_density=0.1304 ore_density=0.0000 map_mode=balanced is_maze=False
+[DEBUG round 6] wall_density=0.1449 ore_density=0.0000 map_mode=balanced is_maze=False
