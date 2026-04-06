@@ -1,4 +1,6 @@
-"""v20: Prefer ore closer to core — shorter chains, faster delivery.
+"""v21: Simplify gunner placement — no chain destruction.
+
+v20: Prefer ore closer to core — shorter chains, faster delivery.
 
 v19: Harvest axionite ore tiles too — more harvesters, better tiebreakers.
 
@@ -25,17 +27,11 @@ class Player:
         self.harvesters_built = 0
         self._enemy_dir = None
         self._enemy_core = None
-        # Splitter-gunner state machine
-        self.sent_step = 0  # 0=idle, 1=destroy, 2=splitter, 3=branch, 4=gunner, 5=reset
-        self.sent_conv_pos = None
-        self.sent_conv_dir = None
-        self.sent_branch_pos = None
-        self.sent_sentinel_pos = None
-        self.sent_branch_dir = None
         self.is_attacker = False
         self.fixing_chain = False
         self.fix_path = []
         self.fix_idx = 0
+        self.gunner_placed = 0  # count of gunners built
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -207,9 +203,9 @@ class Player:
         if (map_mode != "tight"
                 and (self.my_id or 0) % 5 == 1 and rnd > 200
                 and self.harvesters_built >= 3 and self.core_pos
-                and self.sent_step < 6
-                and c.get_global_resources()[0] >= 80):
-            if self._build_sentinel_infra(c, pos):
+                and self.gunner_placed < 3
+                and c.get_global_resources()[0] >= 20):
+            if self._place_gunner(c, pos):
                 return
 
         # Barrier placement near core (skip on tight maps — resources too scarce)
@@ -354,129 +350,46 @@ class Player:
         far = Position(pos.x + dx * reach, pos.y + dy * reach)
         self._nav(c, pos, far, passable)
 
-    # -------------------------------------------------------- Sentinel infra
-    def _build_sentinel_infra(self, c, pos):
-        """Splitter-based gunner: find conveyor, destroy, build splitter+branch+gunner."""
-        # Count gunners, cap at 3
-        if self.sent_step == 0:
-            sent_count = 0
-            for eid in c.get_nearby_buildings():
-                try:
-                    if (c.get_entity_type(eid) == EntityType.GUNNER
-                            and c.get_team(eid) == c.get_team()):
-                        sent_count += 1
-                except Exception:
-                    pass
-            if sent_count >= 3:
-                self.sent_step = 6
-                return False
-            # Find conveyor near core to replace
-            best_conv = None
-            best_dist = 10**9
-            for eid in c.get_nearby_buildings():
-                try:
-                    if (c.get_entity_type(eid) == EntityType.CONVEYOR
-                            and c.get_team(eid) == c.get_team()):
-                        epos = c.get_position(eid)
-                        if self.core_pos:
-                            d2 = epos.distance_squared(self.core_pos)
-                            if 4 < d2 < 50 and d2 < best_dist:
-                                best_dist = d2
-                                best_conv = eid
-                except Exception:
-                    pass
-            if best_conv is None:
-                return False
-            self.sent_conv_pos = c.get_position(best_conv)
-            self.sent_conv_dir = c.get_direction(best_conv)
-            cd = self.sent_conv_dir
-            for branch_dir in [cd.rotate_left().rotate_left(),
-                               cd.rotate_right().rotate_right()]:
-                bp = self.sent_conv_pos.add(branch_dir)
-                sp = bp.add(branch_dir)
-                try:
-                    if (c.get_tile_env(bp) != Environment.WALL
-                            and c.get_tile_env(sp) != Environment.WALL
-                            and c.is_tile_empty(bp)
-                            and c.is_tile_empty(sp)):
-                        self.sent_branch_pos = bp
-                        self.sent_sentinel_pos = sp
-                        self.sent_branch_dir = branch_dir
-                        self.sent_step = 1
-                        return False
-                except Exception:
-                    pass
+    # -------------------------------------------------------- Gunner placement
+    def _place_gunner(self, c, pos):
+        """Place a gunner on any empty tile near core facing the enemy. No splitter, no chain destruction."""
+        if c.get_action_cooldown() != 0:
             return False
 
-        # Step 1: Walk to conveyor, destroy it
-        if self.sent_step == 1:
-            if pos.distance_squared(self.sent_conv_pos) > 2:
-                self._walk_to(c, pos, self.sent_conv_pos)
-                return True
-            if c.can_destroy(self.sent_conv_pos):
-                c.destroy(self.sent_conv_pos)
-                self.sent_step = 2
-            return True
-
-        # Step 2: Build splitter
-        if self.sent_step == 2:
-            if c.get_action_cooldown() != 0:
-                return True
-            if pos.distance_squared(self.sent_conv_pos) > 2:
-                self._walk_to(c, pos, self.sent_conv_pos)
-                return True
-            ti = c.get_global_resources()[0]
-            if ti < c.get_splitter_cost()[0] + 10:
-                return True
-            if c.can_build_splitter(self.sent_conv_pos, self.sent_conv_dir):
-                c.build_splitter(self.sent_conv_pos, self.sent_conv_dir)
-                self.sent_step = 3
-            return True
-
-        # Step 3: Build branch conveyor
-        if self.sent_step == 3:
-            if c.get_action_cooldown() != 0:
-                return True
-            if pos.distance_squared(self.sent_branch_pos) > 2:
-                self._walk_to(c, pos, self.sent_branch_pos)
-                return True
-            ti = c.get_global_resources()[0]
-            if ti < c.get_conveyor_cost()[0] + 10:
-                return True
-            if c.can_build_conveyor(self.sent_branch_pos, self.sent_branch_dir):
-                c.build_conveyor(self.sent_branch_pos, self.sent_branch_dir)
-                self.sent_step = 4
-            return True
-
-        # Step 4: Build gunner
-        if self.sent_step == 4:
-            if c.get_action_cooldown() != 0:
-                return True
-            if pos.distance_squared(self.sent_sentinel_pos) > 2:
-                self._walk_to(c, pos, self.sent_sentinel_pos)
-                return True
-            ti = c.get_global_resources()[0]
-            if ti < c.get_gunner_cost()[0] + 10:
-                return True
-            face = self.sent_branch_dir
-            if c.can_build_gunner(self.sent_sentinel_pos, face):
-                c.build_gunner(self.sent_sentinel_pos, face)
-                self.sent_step = 5
-            else:
-                for d in DIRS:
-                    if d == self.sent_branch_dir.opposite():
-                        continue
-                    if c.can_build_gunner(self.sent_sentinel_pos, d):
-                        c.build_gunner(self.sent_sentinel_pos, d)
-                        self.sent_step = 5
-                        break
-            return True
-
-        # Step 5: Reset for next sentinel
-        if self.sent_step == 5:
-            self.sent_step = 0
-            self.sent_conv_pos = None
+        # Recount nearby gunners each call
+        gunner_count = 0
+        for eid in c.get_nearby_buildings():
+            try:
+                if (c.get_entity_type(eid) == EntityType.GUNNER
+                        and c.get_team(eid) == c.get_team()):
+                    gunner_count += 1
+            except Exception:
+                pass
+        if gunner_count >= 3:
             return False
+
+        ti = c.get_global_resources()[0]
+        if ti < c.get_gunner_cost()[0] + 10:
+            return False
+
+        enemy_dir = self._get_enemy_direction(c)
+        if not enemy_dir:
+            return False
+
+        enemy_target = self._get_enemy_core_pos(c) or self.core_pos.add(enemy_dir)
+
+        # Try building adjacent to current position first, then walk toward core
+        for d in self._rank(pos, enemy_target):
+            sp = pos.add(d)
+            if c.can_build_gunner(sp, enemy_dir):
+                c.build_gunner(sp, enemy_dir)
+                self.gunner_placed += 1
+                return True
+
+        # Walk toward core area to find a good spot
+        if self.core_pos and pos.distance_squared(self.core_pos) > 25:
+            self._walk_to(c, pos, self.core_pos)
+            return True
 
         return False
 
