@@ -1,4 +1,13 @@
-"""v27: Ore-density-aware maze detection for butterfly fragmented map.
+"""v28: Marker-based ore claiming — prevents duplicate harvester targeting.
+
+Builders place a claim marker (value=1) on target ore tiles when within action
+radius. Other builders see the allied marker and skip that tile from ore_tiles.
+Before building a harvester, destroy our own claim marker first (0 cooldown)
+so can_build_harvester() works. Test result: 4/6 vs buzzing_prev (galaxy x2,
+arena x1, default_medium1 x1). default_medium1 position A asymmetry is
+pre-existing (same in buzzing_prev self-play), not a regression.
+
+v27: Ore-density-aware maze detection for butterfly fragmented map.
 
 Adds ore density tracking alongside wall density to detect butterfly-style
 maps (rich ore + high walls + fragmented regions). Two improvements:
@@ -54,6 +63,8 @@ class Player:
         self.gunner_placed = 0  # count of gunners built
         self._wall_density = None
         self._ore_density = None  # ore tiles / total tiles in vision (ore-rich map detection)
+        self._claimed_pos = None    # Position of our placed claim marker
+        self._marker_placed = False # Whether we've placed the marker yet
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -184,8 +195,19 @@ class Player:
                 passable.add(t)
                 if e in (Environment.ORE_TITANIUM, Environment.ORE_AXIONITE):
                     total_ore_count += 1
-                    if c.get_tile_building_id(t) is None:
+                    bid = c.get_tile_building_id(t)
+                    if bid is None:
                         ore_tiles.append(t)
+                    else:
+                        # Only include if it's our own claim marker (still available to us)
+                        try:
+                            if (c.get_entity_type(bid) == EntityType.MARKER
+                                    and c.get_team(bid) == c.get_team()
+                                    and t == self._claimed_pos):
+                                ore_tiles.append(t)
+                            # else: another builder's marker or real building — skip
+                        except Exception:
+                            pass  # can't read enemy entity — skip
 
         rnd = c.get_current_round()
 
@@ -272,6 +294,18 @@ class Player:
 
         # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
+            # Destroy our claim marker on adjacent tiles so can_build_harvester works
+            if self._claimed_pos is not None:
+                if pos.distance_squared(self._claimed_pos) <= 2:
+                    bid = c.get_tile_building_id(self._claimed_pos)
+                    if bid is not None:
+                        try:
+                            if c.get_entity_type(bid) == EntityType.MARKER:
+                                c.destroy(self._claimed_pos)
+                        except Exception:
+                            pass
+                    self._claimed_pos = None
+                    self._marker_placed = False
             ore = self._best_adj_ore(c, pos)
             if ore is not None:
                 ti = c.get_global_resources()[0]
@@ -315,10 +349,19 @@ class Player:
                     best, bd = t, score
             if best != self.target:
                 self.fix_path = []
+                self._marker_placed = False
+                self._claimed_pos = None
             self.target = best
         elif self.target and c.is_in_vision(self.target):
             if c.get_tile_building_id(self.target) is not None:
                 self.target = None
+
+        # Place claim marker on target ore when within action radius
+        if self.target and not self._marker_placed:
+            if c.can_place_marker(self.target):
+                c.place_marker(self.target, 1)  # CLAIM_VALUE = 1
+                self._claimed_pos = self.target
+                self._marker_placed = True
 
         if self.target:
             self._nav(c, pos, self.target, passable)
