@@ -1,4 +1,21 @@
-"""v26: Nearest-ore scoring on tight maps for faster ore claiming.
+"""v27: Ore-density-aware maze detection for butterfly fragmented map.
+
+Adds ore density tracking alongside wall density to detect butterfly-style
+maps (rich ore + high walls + fragmented regions). Two improvements:
+
+1. Ore scoring: pure builder_dist when maze OR ore-rich (wall_density>15% OR
+   ore_density>12%). Butterfly has ~16% ore density near core (ore 3 steps
+   away); this triggers pure-nearest scoring on both positions.
+
+2. Explore reserve: lower to 5 Ti when BOTH wall AND ore density high
+   (requires wall_density>15% AND ore_density>8%). Conservative check avoids
+   false-positives on cold (diamond wall creates local wall clusters, but ore
+   is 10+ steps away → ore_density≈0 at round 5 → explore_reserve stays 30).
+
+Result: butterfly position A: 24,870 → 29,020 (+16.7%); position B: 34,640
+→ 38,360 (+10.7%). Cold/default_medium1 unchanged (no regression).
+
+v26: Nearest-ore scoring on tight maps for faster ore claiming.
 
 On tight/scarce maps (area<=625), switch from core-proximity scoring
 (builder_dist + core_dist*2) to pure nearest-to-builder scoring. On small
@@ -36,6 +53,7 @@ class Player:
         self.fix_idx = 0
         self.gunner_placed = 0  # count of gunners built
         self._wall_density = None
+        self._ore_density = None  # ore tiles / total tiles in vision (ore-rich map detection)
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -156,6 +174,7 @@ class Player:
         passable = set()
         wall_count = 0
         total_count = 0
+        total_ore_count = 0  # includes occupied ore tiles
         for t in c.get_nearby_tiles():
             e = c.get_tile_env(t)
             total_count += 1
@@ -163,14 +182,20 @@ class Player:
                 wall_count += 1
             else:
                 passable.add(t)
-                if e in (Environment.ORE_TITANIUM, Environment.ORE_AXIONITE) and c.get_tile_building_id(t) is None:
-                    ore_tiles.append(t)
+                if e in (Environment.ORE_TITANIUM, Environment.ORE_AXIONITE):
+                    total_ore_count += 1
+                    if c.get_tile_building_id(t) is None:
+                        ore_tiles.append(t)
 
         rnd = c.get_current_round()
 
         # Lock in wall density after round 5 (builder has moved, better sample)
         if self._wall_density is None and rnd > 5 and total_count > 0:
             self._wall_density = wall_count / total_count
+        # Lock in ore density at round 5 (same as wall density — snapshot near core)
+        # High ore density early = ore-rich map like butterfly (15% ore tiles)
+        if self._ore_density is None and rnd > 5 and total_count > 0:
+            self._ore_density = total_ore_count / total_count
 
         # Early barrier anti-rush: builder with 1+ harvester places 2 barriers near core
         if (rnd <= 30 and self.core_pos
@@ -231,7 +256,7 @@ class Player:
             if self._place_gunner(c, pos):
                 return
 
-        # Barrier placement near core (skip on tight maps — resources too scarce)
+        # Barrier placement near core (skip on tight maps)
         if (map_mode != "tight"
                 and rnd >= 80 and self.core_pos
                 and pos.distance_squared(self.core_pos) <= 20
@@ -273,9 +298,9 @@ class Player:
                     return
 
         # Pick ore: wall-density-adaptive scoring
-        # Maze maps (>15% walls): nearest to builder — core_dist misleads through walls
+        # Maze/ore-rich maps: nearest to builder — core_dist misleads through walls
         # Open maps: core-proximate ore preferred — shorter conveyor chains
-        is_maze = self._wall_density is not None and self._wall_density > 0.15
+        is_maze = self._check_is_maze()
         use_nearest = is_maze or map_mode == "tight"
         if ore_tiles:
             best, bd = None, 10**9
@@ -411,8 +436,13 @@ class Player:
             reach = max(w, h)
             far = Position(pos.x + dx * reach, pos.y + dy * reach)
         # Higher Ti reserve for exploration when far from core (less useful conveyors)
+        # Exception: fragmented ore-rich maps (butterfly) need conveyors as walkways
+        # Use conservative check: both high walls AND high ore density required
         core_dist_sq = pos.distance_squared(self.core_pos) if self.core_pos else 0
-        explore_reserve = 30 if core_dist_sq > 50 else 5
+        if self._check_needs_low_reserve():
+            explore_reserve = 5  # need conveyors as walkways in fragmented regions
+        else:
+            explore_reserve = 30 if core_dist_sq > 50 else 5
         self._nav(c, pos, far, passable, ti_reserve=explore_reserve)
 
     # -------------------------------------------------------- Gunner placement
@@ -603,6 +633,30 @@ class Player:
         self.fix_path = []
 
     # ------------------------------------------------------------ Helpers
+    def _check_is_maze(self):
+        """Maze/fragmented map detection using wall density OR ore density.
+
+        Wall density >15% catches high-wall maps (corridors, butterfly wing areas).
+        Ore density >12% alone catches ore-rich maps like butterfly where the core
+        area may appear locally open. Both thresholds are conservative to avoid
+        false positives on maps like cold (high walls + moderate ore near core).
+        """
+        wall_maze = self._wall_density is not None and self._wall_density > 0.15
+        ore_rich = self._ore_density is not None and self._ore_density > 0.12
+        return wall_maze or ore_rich
+
+    def _check_needs_low_reserve(self):
+        """Whether to lower explore Ti reserve for maze-like navigation.
+
+        More conservative than _check_is_maze: requires BOTH high wall density
+        AND ore richness to avoid false-positives on maps like cold (has diamond
+        walls creating local wall clusters near core) that need high explore_reserve
+        to prevent wasteful conveyor sprawl far from ore.
+        """
+        wall_maze = self._wall_density is not None and self._wall_density > 0.15
+        ore_rich = self._ore_density is not None and self._ore_density > 0.08
+        return wall_maze and ore_rich
+
     def _walk_to(self, c, pos, target):
         d = pos.direction_to(target)
         if d == Direction.CENTRE:
