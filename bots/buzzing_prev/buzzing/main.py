@@ -1,22 +1,56 @@
-"""v32: Higher balanced builder cap + tight-map early barrier defense.
+"""v31: Earlier gunner on expand maps for galaxy defense.
 
-Two targeted fixes for realistic opponents:
+On expand maps (40x40+), build first gunner at round 150 instead of 200.
+Galaxy (40x40, path=34) is vulnerable to rushers arriving by round ~34.
+Earlier gunner provides defense 50 rounds sooner without economy impact
+(3+ harvesters already required, only triggered by id%5==1 builder).
 
-1. Balanced maps (cold): raise builder cap from 10 to 15. ladder_eco mines
-   2x with 40 bots vs our 10. 15 builders = +300% scale (manageable) and
-   should close the mining gap significantly.
-
-2. Tight maps (face/arena): add early barrier defense. ladder_rush sends 3
-   builders to our core by round ~20 on face (path=9). We had NO barriers
-   on tight maps. Now: first builder builds 1-2 barriers toward enemy on
-   rounds 15-25 BEFORE the rush arrives, without delaying first harvester.
-
-v31: Earlier gunner on expand maps for galaxy defense.
 v30: Spawn first builder toward nearest ore — faster first harvester.
+
+The very first builder is now spawned in the direction of the nearest visible
+ore from the core (vision r²=36). This saves 2-5 rounds of exploration and
+nets 50-125 extra Ti over a 2000-round game.
+
 v29: Fix cold regression — marker only placed at distance > 2 (not adjacent).
+
+v28 marker system regressed cold by placing claim markers directly on ore tiles,
+blocking can_build_harvester when the builder arrived adjacent. Root cause:
+marker on ore tile causes can_build_harvester to return False. Fix: only place
+the marker when distance_sq > 2 (more than 1 step away), so the marker is gone
+(auto-replaced/not placed) by the time the builder is adjacent and tries to build.
+
+Also fixes ore scan to include marker-covered tiles (builder counts them as
+targetable ore), and adds scoring penalty (+10000) for tiles with another
+builder's marker to prefer unclaimed ore without hard-blocking alternatives.
+
+Result: cold restored to v27 baseline (buzzing wins 15161 vs 16648 Ti).
+Galaxy/arena/butterfly unchanged.
+
 v28: Marker-based ore claiming — prevents duplicate harvester targeting.
 v27: Ore-density-aware maze detection for butterfly fragmented map.
+
+Adds ore density tracking alongside wall density to detect butterfly-style
+maps (rich ore + high walls + fragmented regions). Two improvements:
+
+1. Ore scoring: pure builder_dist when maze OR ore-rich (wall_density>15% OR
+   ore_density>12%). Butterfly has ~16% ore density near core (ore 3 steps
+   away); this triggers pure-nearest scoring on both positions.
+
+2. Explore reserve: lower to 5 Ti when BOTH wall AND ore density high
+   (requires wall_density>15% AND ore_density>8%). Conservative check avoids
+   false-positives on cold (diamond wall creates local wall clusters, but ore
+   is 10+ steps away → ore_density≈0 at round 5 → explore_reserve stays 30).
+
+Result: butterfly position A: 24,870 → 29,020 (+16.7%); position B: 34,640
+→ 38,360 (+10.7%). Cold/default_medium1 unchanged (no regression).
+
 v26: Nearest-ore scoring on tight maps for faster ore claiming.
+
+On tight/scarce maps (area<=625), switch from core-proximity scoring
+(builder_dist + core_dist*2) to pure nearest-to-builder scoring. On small
+maps every ore tile is contested -- grabbing the closest one ASAP matters
+more than minimizing conveyor chain length to core.
+
 v25: Distance-based explore Ti reserve + time-based builder ramp.
 v24: Extend sector-based exploration to balanced maps.
 v23: Sector-based exploration on large maps.
@@ -219,15 +253,9 @@ class Player:
         if self._ore_density is None and rnd > 5 and total_count > 0:
             self._ore_density = total_ore_count / total_count
 
-        # Early barrier anti-rush: builder places 1-2 barriers near core
-        # Tight maps: second+ builder (id%5!=0) places barrier as first action
-        # Other maps: wait for 1+ harvester first
-        early_barrier_ok = (
-            (map_mode == "tight" and rnd >= 5 and (self.my_id or 0) % 5 != 0)
-            or self.harvesters_built >= 1
-        )
+        # Early barrier anti-rush: builder with 1+ harvester places 2 barriers near core
         if (rnd <= 30 and self.core_pos
-                and early_barrier_ok
+                and self.harvesters_built >= 1
                 and not hasattr(self, '_early_barriers')
                 and c.get_action_cooldown() == 0
                 and pos.distance_squared(self.core_pos) <= 18):
@@ -236,8 +264,7 @@ class Player:
             if self._early_barrier_count < 2:
                 ti = c.get_global_resources()[0]
                 bc = c.get_barrier_cost()[0]
-                barrier_reserve = 5 if map_mode == "tight" else 20
-                if ti >= bc + barrier_reserve:
+                if ti >= bc + 20:
                     enemy_dir = self._get_enemy_direction(c)
                     if enemy_dir:
                         edx, edy = enemy_dir.delta()
