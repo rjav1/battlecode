@@ -89,7 +89,7 @@ class Player:
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
         if self.map_mode == "tight":
-            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 8)
+            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 10)
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (5 if rnd <= 150 else (8 if rnd <= 400 else 15))
         else:  # balanced

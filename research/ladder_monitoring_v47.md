@@ -61,11 +61,25 @@ V48 era starts now. No confirmed V48 matches yet (next match likely V48).
 
 ---
 
-## Check-in #3 — (pending)
+## Check-in #3 — ~22:37
+
+No new matches. Last match still 22:26 (The Defect). Matchmaker has not fired in 10+ min.
+
+**V48 era: 0 matches played** — V48 deployed ~22:28, V49 deployed ~22:35 before any V48 matches.
+V48 immediately superseded: reverted balanced caps (58%→50% regression), added min-dimension gaussian classification.
+
+**V49 now active.**
 
 ---
 
-## Check-in #4 — (pending)
+## Check-in #4 — ~22:40
+
+New match:
+| Time  | As Team | Opponent        | Score | Result | Notes |
+|-------|---------|-----------------|-------|--------|-------|
+| 22:37 | B       | Pray and Deploy | 5-0   | LOSS   | 0-5 sweep (A=5, B=0) — first confirmed V49 match |
+
+V49 era: 1 match, 1 loss. 0-5 sweep loss — only 1 data point so far.
 
 ---
 
@@ -78,4 +92,5 @@ V48 era starts now. No confirmed V48 matches yet (next match likely V48).
 | Version | Wins | Losses | Win% | Notes |
 |---------|------|--------|------|-------|
 | V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
-| V48 era | 0 | 0 | — | Just deployed |
+| V48 era | 0 | 0 | — | Superseded before any matches played |
+| V49 era | 0 | 1 | 0% | 0-5 swept by Pray and Deploy — 1 match only |
