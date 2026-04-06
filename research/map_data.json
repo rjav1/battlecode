@@ -1,0 +1,1802 @@
+{
+  "arena": {
+    "w": 25,
+    "h": 25,
+    "total": 625,
+    "walls": 41,
+    "wall_pct": 6.6,
+    "ti_ore": 10,
+    "ax_ore": 4,
+    "total_ore": 14,
+    "core_pos": [
+      [
+        8,
+        10
+      ],
+      [
+        16,
+        14
+      ]
+    ],
+    "core_euclid": 8.9,
+    "core_path": 12,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 3
+      },
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 3
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 584,
+    "region_sizes": [
+      584
+    ],
+    "region_pct": 93.4,
+    "categories": [
+      "Rush-friendly",
+      "Resource-scarce"
+    ]
+  },
+  "bar_chart": {
+    "w": 35,
+    "h": 40,
+    "total": 1400,
+    "walls": 340,
+    "wall_pct": 24.3,
+    "ti_ore": 20,
+    "ax_ore": 8,
+    "total_ore": 28,
+    "core_pos": [
+      [
+        9,
+        29
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    "core_euclid": 19.0,
+    "core_path": 25,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 14
+      },
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 14
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "distributed",
+    "chokes": 111,
+    "num_regions": 11,
+    "largest_region": 694,
+    "region_sizes": [
+      694,
+      70,
+      70,
+      51,
+      51
+    ],
+    "region_pct": 49.6,
+    "categories": [
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "battlebot": {
+    "w": 21,
+    "h": 29,
+    "total": 609,
+    "walls": 130,
+    "wall_pct": 21.3,
+    "ti_ore": 17,
+    "ax_ore": 6,
+    "total_ore": 23,
+    "core_pos": [
+      [
+        4,
+        4
+      ],
+      [
+        16,
+        4
+      ]
+    ],
+    "core_euclid": 12.0,
+    "core_path": 12,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 25
+      },
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 25
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 13,
+    "num_regions": 3,
+    "largest_region": 287,
+    "region_sizes": [
+      287,
+      129,
+      63
+    ],
+    "region_pct": 47.1,
+    "categories": [
+      "Choke-heavy"
+    ]
+  },
+  "binary_tree": {
+    "w": 41,
+    "h": 30,
+    "total": 1230,
+    "walls": 155,
+    "wall_pct": 12.6,
+    "ti_ore": 30,
+    "ax_ore": 24,
+    "total_ore": 54,
+    "core_pos": [
+      [
+        10,
+        16
+      ],
+      [
+        30,
+        16
+      ]
+    ],
+    "core_euclid": 20.0,
+    "core_path": 22,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 7
+      },
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 7
+      }
+    ],
+    "colocation": "separated",
+    "ore_spread": "centered",
+    "chokes": 20,
+    "num_regions": 2,
+    "largest_region": 1045,
+    "region_sizes": [
+      1045,
+      30
+    ],
+    "region_pct": 85.0,
+    "categories": [
+      "Rush-friendly",
+      "Economy-friendly"
+    ]
+  },
+  "butterfly": {
+    "w": 31,
+    "h": 31,
+    "total": 961,
+    "walls": 177,
+    "wall_pct": 18.4,
+    "ti_ore": 94,
+    "ax_ore": 57,
+    "total_ore": 151,
+    "core_pos": [
+      [
+        8,
+        24
+      ],
+      [
+        22,
+        24
+      ]
+    ],
+    "core_euclid": 14.0,
+    "core_path": -1,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 3,
+        "nearest_ax": 13
+      },
+      {
+        "nearest_ti": 3,
+        "nearest_ax": 13
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 19,
+    "num_regions": 10,
+    "largest_region": 210,
+    "region_sizes": [
+      210,
+      201,
+      201,
+      68,
+      68
+    ],
+    "region_pct": 21.9,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "chemistry_class": {
+    "w": 40,
+    "h": 40,
+    "total": 1600,
+    "walls": 122,
+    "wall_pct": 7.6,
+    "ti_ore": 34,
+    "ax_ore": 10,
+    "total_ore": 44,
+    "core_pos": [
+      [
+        14,
+        23
+      ],
+      [
+        25,
+        23
+      ]
+    ],
+    "core_euclid": 11.0,
+    "core_path": 29,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 19
+      },
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 19
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 30,
+    "num_regions": 1,
+    "largest_region": 1478,
+    "region_sizes": [
+      1478
+    ],
+    "region_pct": 92.4,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy"
+    ]
+  },
+  "cinnamon_roll": {
+    "w": 30,
+    "h": 30,
+    "total": 900,
+    "walls": 170,
+    "wall_pct": 18.9,
+    "ti_ore": 12,
+    "ax_ore": 6,
+    "total_ore": 18,
+    "core_pos": [
+      [
+        2,
+        27
+      ],
+      [
+        27,
+        2
+      ]
+    ],
+    "core_euclid": 35.4,
+    "core_path": 52,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 42,
+    "num_regions": 7,
+    "largest_region": 382,
+    "region_sizes": [
+      382,
+      169,
+      169,
+      4,
+      4
+    ],
+    "region_pct": 42.4,
+    "categories": [
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "cold": {
+    "w": 37,
+    "h": 37,
+    "total": 1369,
+    "walls": 98,
+    "wall_pct": 7.2,
+    "ti_ore": 115,
+    "ax_ore": 18,
+    "total_ore": 133,
+    "core_pos": [
+      [
+        12,
+        14
+      ],
+      [
+        24,
+        14
+      ]
+    ],
+    "core_euclid": 12.0,
+    "core_path": 28,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 11
+      },
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 11
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 2,
+    "num_regions": 1,
+    "largest_region": 1271,
+    "region_sizes": [
+      1271
+    ],
+    "region_pct": 92.8,
+    "categories": [
+      "Economy-friendly"
+    ]
+  },
+  "corridors": {
+    "w": 31,
+    "h": 31,
+    "total": 961,
+    "walls": 175,
+    "wall_pct": 18.2,
+    "ti_ore": 32,
+    "ax_ore": 6,
+    "total_ore": 38,
+    "core_pos": [
+      [
+        5,
+        15
+      ],
+      [
+        25,
+        15
+      ]
+    ],
+    "core_euclid": 20.0,
+    "core_path": 46,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 30
+      },
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 30
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 786,
+    "region_sizes": [
+      786
+    ],
+    "region_pct": 81.8,
+    "categories": [
+      "Choke-heavy"
+    ]
+  },
+  "cubes": {
+    "w": 50,
+    "h": 50,
+    "total": 2500,
+    "walls": 382,
+    "wall_pct": 15.3,
+    "ti_ore": 134,
+    "ax_ore": 40,
+    "total_ore": 174,
+    "core_pos": [
+      [
+        14,
+        35
+      ],
+      [
+        35,
+        14
+      ]
+    ],
+    "core_euclid": 29.7,
+    "core_path": 54,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 14,
+        "nearest_ax": 21
+      },
+      {
+        "nearest_ti": 14,
+        "nearest_ax": 21
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 40,
+    "num_regions": 1,
+    "largest_region": 2118,
+    "region_sizes": [
+      2118
+    ],
+    "region_pct": 84.7,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy"
+    ]
+  },
+  "default_large1": {
+    "w": 40,
+    "h": 40,
+    "total": 1600,
+    "walls": 126,
+    "wall_pct": 7.9,
+    "ti_ore": 20,
+    "ax_ore": 10,
+    "total_ore": 30,
+    "core_pos": [
+      [
+        11,
+        25
+      ],
+      [
+        28,
+        14
+      ]
+    ],
+    "core_euclid": 20.2,
+    "core_path": 48,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 8
+      },
+      {
+        "nearest_ti": 6,
+        "nearest_ax": 8
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 1474,
+    "region_sizes": [
+      1474
+    ],
+    "region_pct": 92.1,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "default_large2": {
+    "w": 50,
+    "h": 30,
+    "total": 1500,
+    "walls": 198,
+    "wall_pct": 13.2,
+    "ti_ore": 28,
+    "ax_ore": 8,
+    "total_ore": 36,
+    "core_pos": [
+      [
+        3,
+        16
+      ],
+      [
+        46,
+        16
+      ]
+    ],
+    "core_euclid": 43.0,
+    "core_path": 55,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 32
+      },
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 32
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 2,
+    "num_regions": 1,
+    "largest_region": 1302,
+    "region_sizes": [
+      1302
+    ],
+    "region_pct": 86.8,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "default_medium1": {
+    "w": 30,
+    "h": 30,
+    "total": 900,
+    "walls": 58,
+    "wall_pct": 6.4,
+    "ti_ore": 20,
+    "ax_ore": 6,
+    "total_ore": 26,
+    "core_pos": [
+      [
+        10,
+        19
+      ],
+      [
+        19,
+        10
+      ]
+    ],
+    "core_euclid": 12.7,
+    "core_path": 18,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 8
+      },
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 8
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 842,
+    "region_sizes": [
+      842
+    ],
+    "region_pct": 93.6,
+    "categories": [
+      "Rush-friendly"
+    ]
+  },
+  "default_medium2": {
+    "w": 30,
+    "h": 30,
+    "total": 900,
+    "walls": 58,
+    "wall_pct": 6.4,
+    "ti_ore": 22,
+    "ax_ore": 6,
+    "total_ore": 28,
+    "core_pos": [
+      [
+        3,
+        3
+      ],
+      [
+        26,
+        3
+      ]
+    ],
+    "core_euclid": 23.0,
+    "core_path": 29,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 15
+      },
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 15
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "distributed",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 842,
+    "region_sizes": [
+      842
+    ],
+    "region_pct": 93.6,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "default_small1": {
+    "w": 20,
+    "h": 20,
+    "total": 400,
+    "walls": 26,
+    "wall_pct": 6.5,
+    "ti_ore": 10,
+    "ax_ore": 4,
+    "total_ore": 14,
+    "core_pos": [
+      [
+        1,
+        1
+      ],
+      [
+        18,
+        18
+      ]
+    ],
+    "core_euclid": 24.0,
+    "core_path": 34,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 13
+      },
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 13
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 374,
+    "region_sizes": [
+      374
+    ],
+    "region_pct": 93.5,
+    "categories": [
+      "Resource-scarce"
+    ]
+  },
+  "default_small2": {
+    "w": 21,
+    "h": 21,
+    "total": 441,
+    "walls": 50,
+    "wall_pct": 11.3,
+    "ti_ore": 14,
+    "ax_ore": 4,
+    "total_ore": 18,
+    "core_pos": [
+      [
+        10,
+        1
+      ],
+      [
+        10,
+        19
+      ]
+    ],
+    "core_euclid": 18.0,
+    "core_path": 32,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 3,
+        "nearest_ax": 19
+      },
+      {
+        "nearest_ti": 3,
+        "nearest_ax": 19
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 391,
+    "region_sizes": [
+      391
+    ],
+    "region_pct": 88.7,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "dna": {
+    "w": 21,
+    "h": 50,
+    "total": 1050,
+    "walls": 92,
+    "wall_pct": 8.8,
+    "ti_ore": 78,
+    "ax_ore": 76,
+    "total_ore": 154,
+    "core_pos": [
+      [
+        10,
+        48
+      ],
+      [
+        10,
+        1
+      ]
+    ],
+    "core_euclid": 47.0,
+    "core_path": 59,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 8
+      },
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 8
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 52,
+    "num_regions": 1,
+    "largest_region": 958,
+    "region_sizes": [
+      958
+    ],
+    "region_pct": 91.2,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Elongated"
+    ]
+  },
+  "face": {
+    "w": 20,
+    "h": 20,
+    "total": 400,
+    "walls": 38,
+    "wall_pct": 9.5,
+    "ti_ore": 8,
+    "ax_ore": 4,
+    "total_ore": 12,
+    "core_pos": [
+      [
+        5,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "core_euclid": 9.0,
+    "core_path": 9,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 10
+      },
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 10
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 1,
+    "num_regions": 1,
+    "largest_region": 362,
+    "region_sizes": [
+      362
+    ],
+    "region_pct": 90.5,
+    "categories": [
+      "Rush-friendly",
+      "Resource-scarce"
+    ]
+  },
+  "galaxy": {
+    "w": 40,
+    "h": 40,
+    "total": 1600,
+    "walls": 134,
+    "wall_pct": 8.4,
+    "ti_ore": 16,
+    "ax_ore": 8,
+    "total_ore": 24,
+    "core_pos": [
+      [
+        4,
+        35
+      ],
+      [
+        35,
+        4
+      ]
+    ],
+    "core_euclid": 43.8,
+    "core_path": 68,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 15
+      },
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 15
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 1466,
+    "region_sizes": [
+      1466
+    ],
+    "region_pct": 91.6,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "gaussian": {
+    "w": 35,
+    "h": 20,
+    "total": 700,
+    "walls": 85,
+    "wall_pct": 12.1,
+    "ti_ore": 12,
+    "ax_ore": 4,
+    "total_ore": 16,
+    "core_pos": [
+      [
+        10,
+        17
+      ],
+      [
+        24,
+        17
+      ]
+    ],
+    "core_euclid": 14.0,
+    "core_path": 34,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 13
+      },
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 13
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "distributed",
+    "chokes": 5,
+    "num_regions": 2,
+    "largest_region": 321,
+    "region_sizes": [
+      321,
+      294
+    ],
+    "region_pct": 45.9,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "git_branches": {
+    "w": 50,
+    "h": 35,
+    "total": 1750,
+    "walls": 284,
+    "wall_pct": 16.2,
+    "ti_ore": 90,
+    "ax_ore": 24,
+    "total_ore": 114,
+    "core_pos": [
+      [
+        6,
+        5
+      ],
+      [
+        43,
+        5
+      ]
+    ],
+    "core_euclid": 37.0,
+    "core_path": 37,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 17,
+        "nearest_ax": 33
+      },
+      {
+        "nearest_ti": 17,
+        "nearest_ax": 33
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 58,
+    "num_regions": 16,
+    "largest_region": 1070,
+    "region_sizes": [
+      1070,
+      382,
+      1,
+      1,
+      1
+    ],
+    "region_pct": 61.1,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "hooks": {
+    "w": 31,
+    "h": 31,
+    "total": 961,
+    "walls": 122,
+    "wall_pct": 12.7,
+    "ti_ore": 34,
+    "ax_ore": 8,
+    "total_ore": 42,
+    "core_pos": [
+      [
+        3,
+        22
+      ],
+      [
+        27,
+        8
+      ]
+    ],
+    "core_euclid": 27.8,
+    "core_path": 46,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 14,
+        "nearest_ax": 21
+      },
+      {
+        "nearest_ti": 14,
+        "nearest_ax": 21
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 2,
+    "num_regions": 1,
+    "largest_region": 839,
+    "region_sizes": [
+      839
+    ],
+    "region_pct": 87.3,
+    "categories": [
+      "Economy-friendly"
+    ]
+  },
+  "hourglass": {
+    "w": 27,
+    "h": 45,
+    "total": 1215,
+    "walls": 158,
+    "wall_pct": 13.0,
+    "ti_ore": 40,
+    "ax_ore": 6,
+    "total_ore": 46,
+    "core_pos": [
+      [
+        13,
+        43
+      ],
+      [
+        13,
+        1
+      ]
+    ],
+    "core_euclid": 42.0,
+    "core_path": 42,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 20
+      },
+      {
+        "nearest_ti": 5,
+        "nearest_ax": 20
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 6,
+    "num_regions": 3,
+    "largest_region": 699,
+    "region_sizes": [
+      699,
+      179,
+      179
+    ],
+    "region_pct": 57.5,
+    "categories": [
+      "Economy-friendly"
+    ]
+  },
+  "landscape": {
+    "w": 30,
+    "h": 30,
+    "total": 900,
+    "walls": 60,
+    "wall_pct": 6.7,
+    "ti_ore": 76,
+    "ax_ore": 6,
+    "total_ore": 82,
+    "core_pos": [
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        27
+      ]
+    ],
+    "core_euclid": 25.0,
+    "core_path": -1,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 15,
+        "nearest_ax": 17
+      },
+      {
+        "nearest_ti": 15,
+        "nearest_ax": 17
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 3,
+    "largest_region": 360,
+    "region_sizes": [
+      360,
+      240,
+      240
+    ],
+    "region_pct": 40.0,
+    "categories": [
+      "Rush-friendly",
+      "Economy-friendly"
+    ]
+  },
+  "mandelbrot": {
+    "w": 50,
+    "h": 41,
+    "total": 2050,
+    "walls": 217,
+    "wall_pct": 10.6,
+    "ti_ore": 117,
+    "ax_ore": 24,
+    "total_ore": 141,
+    "core_pos": [
+      [
+        3,
+        39
+      ],
+      [
+        3,
+        1
+      ]
+    ],
+    "core_euclid": 38.0,
+    "core_path": 48,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 25
+      },
+      {
+        "nearest_ti": 8,
+        "nearest_ax": 25
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 31,
+    "num_regions": 6,
+    "largest_region": 834,
+    "region_sizes": [
+      834,
+      599,
+      329,
+      61,
+      5
+    ],
+    "region_pct": 40.7,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "minimaze": {
+    "w": 25,
+    "h": 25,
+    "total": 625,
+    "walls": 145,
+    "wall_pct": 23.2,
+    "ti_ore": 28,
+    "ax_ore": 6,
+    "total_ore": 34,
+    "core_pos": [
+      [
+        1,
+        23
+      ],
+      [
+        23,
+        23
+      ]
+    ],
+    "core_euclid": 22.0,
+    "core_path": 40,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 25
+      },
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 25
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "distributed",
+    "chokes": 47,
+    "num_regions": 1,
+    "largest_region": 480,
+    "region_sizes": [
+      480
+    ],
+    "region_pct": 76.8,
+    "categories": [
+      "Choke-heavy"
+    ]
+  },
+  "pixel_forest": {
+    "w": 45,
+    "h": 25,
+    "total": 1125,
+    "walls": 214,
+    "wall_pct": 19.0,
+    "ti_ore": 26,
+    "ax_ore": 11,
+    "total_ore": 37,
+    "core_pos": [
+      [
+        41,
+        13
+      ],
+      [
+        3,
+        11
+      ]
+    ],
+    "core_euclid": 38.1,
+    "core_path": -1,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 14,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": 14,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 30,
+    "num_regions": 11,
+    "largest_region": 353,
+    "region_sizes": [
+      353,
+      208,
+      208,
+      39,
+      39
+    ],
+    "region_pct": 31.4,
+    "categories": [
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "pls_buy_cucats_merch": {
+    "w": 49,
+    "h": 49,
+    "total": 2401,
+    "walls": 240,
+    "wall_pct": 10.0,
+    "ti_ore": 60,
+    "ax_ore": 20,
+    "total_ore": 80,
+    "core_pos": [
+      [
+        13,
+        17
+      ],
+      [
+        35,
+        31
+      ]
+    ],
+    "core_euclid": 26.1,
+    "core_path": -1,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 74,
+    "num_regions": 5,
+    "largest_region": 1995,
+    "region_sizes": [
+      1995,
+      63,
+      63,
+      20,
+      20
+    ],
+    "region_pct": 83.1,
+    "categories": [
+      "Rush-friendly",
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "settlement": {
+    "w": 50,
+    "h": 38,
+    "total": 1900,
+    "walls": 108,
+    "wall_pct": 5.7,
+    "ti_ore": 148,
+    "ax_ore": 30,
+    "total_ore": 178,
+    "core_pos": [
+      [
+        3,
+        24
+      ],
+      [
+        46,
+        24
+      ]
+    ],
+    "core_euclid": 43.0,
+    "core_path": 45,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 11,
+        "nearest_ax": 23
+      },
+      {
+        "nearest_ti": 11,
+        "nearest_ax": 23
+      }
+    ],
+    "colocation": "separated",
+    "ore_spread": "centered",
+    "chokes": 4,
+    "num_regions": 1,
+    "largest_region": 1792,
+    "region_sizes": [
+      1792
+    ],
+    "region_pct": 94.3,
+    "categories": [
+      "Economy-friendly"
+    ]
+  },
+  "shish_kebab": {
+    "w": 20,
+    "h": 20,
+    "total": 400,
+    "walls": 50,
+    "wall_pct": 12.5,
+    "ti_ore": 10,
+    "ax_ore": 4,
+    "total_ore": 14,
+    "core_pos": [
+      [
+        2,
+        2
+      ],
+      [
+        17,
+        17
+      ]
+    ],
+    "core_euclid": 21.2,
+    "core_path": 36,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 8,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": 8,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 12,
+    "num_regions": 5,
+    "largest_region": 326,
+    "region_sizes": [
+      326,
+      6,
+      6,
+      6,
+      6
+    ],
+    "region_pct": 81.5,
+    "categories": [
+      "Fragmented",
+      "Resource-scarce"
+    ]
+  },
+  "sierpinski_evil": {
+    "w": 31,
+    "h": 31,
+    "total": 961,
+    "walls": 273,
+    "wall_pct": 28.4,
+    "ti_ore": 21,
+    "ax_ore": 8,
+    "total_ore": 29,
+    "core_pos": [
+      [
+        3,
+        15
+      ],
+      [
+        27,
+        15
+      ]
+    ],
+    "core_euclid": 24.0,
+    "core_path": -1,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": -1,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "distributed",
+    "chokes": 195,
+    "num_regions": 66,
+    "largest_region": 225,
+    "region_sizes": [
+      225,
+      225,
+      84,
+      12,
+      12
+    ],
+    "region_pct": 23.4,
+    "categories": [
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "socket": {
+    "w": 50,
+    "h": 20,
+    "total": 1000,
+    "walls": 302,
+    "wall_pct": 30.2,
+    "ti_ore": 42,
+    "ax_ore": 24,
+    "total_ore": 66,
+    "core_pos": [
+      [
+        3,
+        18
+      ],
+      [
+        3,
+        1
+      ]
+    ],
+    "core_euclid": 17.0,
+    "core_path": 83,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 15
+      },
+      {
+        "nearest_ti": 7,
+        "nearest_ax": 15
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "distributed",
+    "chokes": 90,
+    "num_regions": 1,
+    "largest_region": 698,
+    "region_sizes": [
+      698
+    ],
+    "region_pct": 69.8,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Elongated"
+    ]
+  },
+  "starry_night": {
+    "w": 50,
+    "h": 41,
+    "total": 2050,
+    "walls": 136,
+    "wall_pct": 6.6,
+    "ti_ore": 126,
+    "ax_ore": 58,
+    "total_ore": 184,
+    "core_pos": [
+      [
+        20,
+        24
+      ],
+      [
+        29,
+        16
+      ]
+    ],
+    "core_euclid": 12.0,
+    "core_path": 17,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 12
+      },
+      {
+        "nearest_ti": 10,
+        "nearest_ax": 12
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 28,
+    "num_regions": 3,
+    "largest_region": 1886,
+    "region_sizes": [
+      1886,
+      14,
+      14
+    ],
+    "region_pct": 92.0,
+    "categories": [
+      "Rush-friendly",
+      "Economy-friendly"
+    ]
+  },
+  "thread_of_connection": {
+    "w": 20,
+    "h": 20,
+    "total": 400,
+    "walls": 54,
+    "wall_pct": 13.5,
+    "ti_ore": 34,
+    "ax_ore": 8,
+    "total_ore": 42,
+    "core_pos": [
+      [
+        3,
+        16
+      ],
+      [
+        16,
+        3
+      ]
+    ],
+    "core_euclid": 18.4,
+    "core_path": 52,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 21
+      },
+      {
+        "nearest_ti": 4,
+        "nearest_ax": 21
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 0,
+    "num_regions": 1,
+    "largest_region": 346,
+    "region_sizes": [
+      346
+    ],
+    "region_pct": 86.5,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "tiles": {
+    "w": 40,
+    "h": 30,
+    "total": 1200,
+    "walls": 318,
+    "wall_pct": 26.5,
+    "ti_ore": 42,
+    "ax_ore": 32,
+    "total_ore": 74,
+    "core_pos": [
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        28
+      ]
+    ],
+    "core_euclid": 27.0,
+    "core_path": 41,
+    "symmetry": "vertical",
+    "ore_dists": [
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 14
+      },
+      {
+        "nearest_ti": 9,
+        "nearest_ax": 14
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 40,
+    "num_regions": 9,
+    "largest_region": 780,
+    "region_sizes": [
+      780,
+      18,
+      18,
+      15,
+      15
+    ],
+    "region_pct": 65.0,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "tree_of_life": {
+    "w": 39,
+    "h": 30,
+    "total": 1170,
+    "walls": 97,
+    "wall_pct": 8.3,
+    "ti_ore": 26,
+    "ax_ore": 6,
+    "total_ore": 32,
+    "core_pos": [
+      [
+        4,
+        22
+      ],
+      [
+        34,
+        22
+      ]
+    ],
+    "core_euclid": 30.0,
+    "core_path": 70,
+    "symmetry": "horizontal",
+    "ore_dists": [
+      {
+        "nearest_ti": 18,
+        "nearest_ax": 22
+      },
+      {
+        "nearest_ti": 18,
+        "nearest_ax": 22
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 4,
+    "num_regions": 2,
+    "largest_region": 865,
+    "region_sizes": [
+      865,
+      208
+    ],
+    "region_pct": 73.9,
+    "categories": [
+      "Mixed"
+    ]
+  },
+  "wasteland": {
+    "w": 40,
+    "h": 40,
+    "total": 1600,
+    "walls": 400,
+    "wall_pct": 25.0,
+    "ti_ore": 34,
+    "ax_ore": 10,
+    "total_ore": 44,
+    "core_pos": [
+      [
+        3,
+        36
+      ],
+      [
+        36,
+        3
+      ]
+    ],
+    "core_euclid": 46.7,
+    "core_path": 66,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 16,
+        "nearest_ax": 22
+      },
+      {
+        "nearest_ti": 16,
+        "nearest_ax": 22
+      }
+    ],
+    "colocation": "nearby",
+    "ore_spread": "centered",
+    "chokes": 268,
+    "num_regions": 9,
+    "largest_region": 1178,
+    "region_sizes": [
+      1178,
+      8,
+      8,
+      1,
+      1
+    ],
+    "region_pct": 73.6,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  },
+  "wasteland_oasis": {
+    "w": 40,
+    "h": 40,
+    "total": 1600,
+    "walls": 570,
+    "wall_pct": 35.6,
+    "ti_ore": 46,
+    "ax_ore": 24,
+    "total_ore": 70,
+    "core_pos": [
+      [
+        8,
+        6
+      ],
+      [
+        31,
+        33
+      ]
+    ],
+    "core_euclid": 35.5,
+    "core_path": -1,
+    "symmetry": "rotational",
+    "ore_dists": [
+      {
+        "nearest_ti": 14,
+        "nearest_ax": -1
+      },
+      {
+        "nearest_ti": 14,
+        "nearest_ax": -1
+      }
+    ],
+    "colocation": "co-located",
+    "ore_spread": "centered",
+    "chokes": 432,
+    "num_regions": 54,
+    "largest_region": 226,
+    "region_sizes": [
+      226,
+      226,
+      160,
+      160,
+      34
+    ],
+    "region_pct": 14.1,
+    "categories": [
+      "Economy-friendly",
+      "Choke-heavy",
+      "Fragmented"
+    ]
+  }
+}
