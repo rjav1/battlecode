@@ -1,8 +1,8 @@
-"""v7: Economy + bridges + sentinels + attacker + barriers + moderate scaling.
+"""v11: Economy + bridges + gunners + attacker + barriers + moderate scaling.
 
 d.opposite() conveyors, BFS nav, moderate builder scaling (cap 20), lower reserves,
-bridge fallback, sentinel placement, attacker raider, symmetry detection, road-destroy fix,
-barrier walls on enemy-facing side of core.
+bridge fallback, gunner placement, attacker raider, symmetry detection, road-destroy fix,
+barrier walls on enemy-facing side of core. Gunners replace sentinels (cheaper, lower scale).
 """
 
 from collections import deque
@@ -22,8 +22,8 @@ class Player:
         self.harvesters_built = 0
         self._enemy_dir = None
         self._enemy_core = None
-        # Splitter-sentinel state machine
-        self.sent_step = 0  # 0=idle, 1=destroy, 2=splitter, 3=branch, 4=sentinel, 5=reset
+        # Splitter-gunner state machine
+        self.sent_step = 0  # 0=idle, 1=destroy, 2=splitter, 3=branch, 4=gunner, 5=reset
         self.sent_conv_pos = None
         self.sent_conv_dir = None
         self.sent_branch_pos = None
@@ -39,6 +39,8 @@ class Player:
             self._builder(c)
         elif t == EntityType.SENTINEL:
             self._sentinel(c)
+        elif t == EntityType.GUNNER:
+            self._gunner(c)
 
     def _core(self, c):
         # Detect map size on first round
@@ -98,6 +100,13 @@ class Player:
             except Exception:
                 continue
 
+    def _gunner(self, c):
+        if c.get_action_cooldown() != 0 or c.get_ammo_amount() < 2:
+            return
+        target = c.get_gunner_target()
+        if target and c.can_fire(target):
+            c.fire(target)
+
     def _builder(self, c):
         pos = c.get_position()
 
@@ -146,11 +155,11 @@ class Player:
             self._attack(c, pos, passable)
             return
 
-        # Sentinel builder: id%5==1, after round 200, 3+ harvesters
+        # Gunner builder: id%5==1, after round 200, 3+ harvesters
         if ((self.my_id or 0) % 5 == 1 and rnd > 200
                 and self.harvesters_built >= 3 and self.core_pos
                 and self.sent_step < 6
-                and c.get_global_resources()[0] >= 150):
+                and c.get_global_resources()[0] >= 80):
             if self._build_sentinel_infra(c, pos):
                 return
 
@@ -265,13 +274,13 @@ class Player:
 
     # -------------------------------------------------------- Sentinel infra
     def _build_sentinel_infra(self, c, pos):
-        """Splitter-based sentinel: find conveyor, destroy, build splitter+branch+sentinel."""
-        # Count sentinels, cap at 2
+        """Splitter-based gunner: find conveyor, destroy, build splitter+branch+gunner."""
+        # Count gunners, cap at 3
         if self.sent_step == 0:
             sent_count = 0
             for eid in c.get_nearby_buildings():
                 try:
-                    if (c.get_entity_type(eid) == EntityType.SENTINEL
+                    if (c.get_entity_type(eid) == EntityType.GUNNER
                             and c.get_team(eid) == c.get_team()):
                         sent_count += 1
                 except Exception:
@@ -335,7 +344,7 @@ class Player:
                 self._walk_to(c, pos, self.sent_conv_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_splitter_cost()[0] + 30:
+            if ti < c.get_splitter_cost()[0] + 10:
                 return True
             if c.can_build_splitter(self.sent_conv_pos, self.sent_conv_dir):
                 c.build_splitter(self.sent_conv_pos, self.sent_conv_dir)
@@ -350,14 +359,14 @@ class Player:
                 self._walk_to(c, pos, self.sent_branch_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_conveyor_cost()[0] + 30:
+            if ti < c.get_conveyor_cost()[0] + 10:
                 return True
             if c.can_build_conveyor(self.sent_branch_pos, self.sent_branch_dir):
                 c.build_conveyor(self.sent_branch_pos, self.sent_branch_dir)
                 self.sent_step = 4
             return True
 
-        # Step 4: Build sentinel
+        # Step 4: Build gunner
         if self.sent_step == 4:
             if c.get_action_cooldown() != 0:
                 return True
@@ -365,18 +374,18 @@ class Player:
                 self._walk_to(c, pos, self.sent_sentinel_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_sentinel_cost()[0] + 30:
+            if ti < c.get_gunner_cost()[0] + 10:
                 return True
             face = self.sent_branch_dir
-            if c.can_build_sentinel(self.sent_sentinel_pos, face):
-                c.build_sentinel(self.sent_sentinel_pos, face)
+            if c.can_build_gunner(self.sent_sentinel_pos, face):
+                c.build_gunner(self.sent_sentinel_pos, face)
                 self.sent_step = 5
             else:
                 for d in DIRS:
                     if d == self.sent_branch_dir.opposite():
                         continue
-                    if c.can_build_sentinel(self.sent_sentinel_pos, d):
-                        c.build_sentinel(self.sent_sentinel_pos, d)
+                    if c.can_build_gunner(self.sent_sentinel_pos, d):
+                        c.build_gunner(self.sent_sentinel_pos, d)
                         self.sent_step = 5
                         break
             return True
