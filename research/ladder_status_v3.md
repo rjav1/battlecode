@@ -202,9 +202,126 @@ Match 2 (v2): 1490 -> 1487 (-3)
 Match 3 (v2): 1487 -> 1490 (+3)
 Match 4 (v4): 1490 -> 1474 (-16)  <-- v4 regression
 Match 5 (v4): 1474 -> 1464 (-10)  <-- v4 continues to lose
+Match 6 (v8): 1464 -> 1468 (+4)   <-- v8 RECOVERY! First win since v2
 ```
 
-**Total: 1500 -> 1464 (-36 Elo). v2 was stabilizing at 1490. v4 is in freefall.**
+**v8 stops the bleeding! Elo recovering.**
+
+---
+
+## NEW: Match 6 -- v8 FIRST WIN! Recovery begins
+
+### Match 6: vs Solo Gambling (v8) -- V8 DEBUT WIN
+| Field | Value |
+|---|---|
+| Match ID | daccc3bf-fb35-43ee-b5b7-4cbb85cbc694 |
+| Date | Apr 5, 11:02 PM |
+| Our Version | **v8** (skipped v5/v6/v7!) |
+| Opponent | Solo Gambling (Elo 1479, novice, 289 matches) |
+| Result | **3-2 WIN** |
+| Elo Change | +3.9 (1464 -> 1468) |
+| Duration | **54s** (fastest match yet!) |
+
+| Game | Map | Winner | Turns |
+|---|---|---|---|
+| 1 | landscape | **buzzing bees** | 2000 |
+| 2 | shish_kebab | Solo Gambling | 2000 |
+| 3 | git_branches | **buzzing bees** | 2000 |
+| 4 | tiles | **buzzing bees** | 2000 |
+| 5 | default_small1 | Solo Gambling | 2000 |
+
+**Key observations:**
+- Won landscape! (v1 lost this map to One More Time)
+- Won git_branches and tiles (consistent with v2 wins)
+- Lost shish_kebab (also lost in v2 vs Chameleon)
+- Match duration 54s vs 2-4min for previous matches -- v8 is dramatically more efficient
+- Beat a higher-Elo opponent (1479 vs our 1464)
+
+---
+
+## Updated Version Comparison
+
+| Version | Matches | Record | Game W-L | Win Rate | Avg Elo Change |
+|---|---|---|---|---|---|
+| v1 | 1 | 0-1 | 1-4 | 20% | -9.9 |
+| v2 | 2 | 1-1 | 5-5 | 50% | +0.25 |
+| v4 | 2 | 0-2 | 1-9 | 10% | -13.0 |
+| v8 | 1 | 1-0 | 3-2 | 60% | +3.9 |
+| **v9** | **1** | **1-0** | **3-2** | **60%** | **+3.4** |
+
+**v8+v9 on a 2-match win streak! Both at 60% game win rate. Elo recovering.**
+
+---
+
+## NEW: Match 7 -- v9 DEBUT WIN! Two in a row!
+
+### Match 7: vs 5goatswalkintoabarbut1dies (v9) -- BACK-TO-BACK WINS
+| Field | Value |
+|---|---|
+| Match ID | 7fb532f0-f1bf-4d0a-b4a7-49dd6b1ef7d8 |
+| Date | Apr 5, 11:12 PM |
+| Our Version | **v9** (first v9 match!) |
+| Opponent | 5goatswalkintoabarbut1dies (Elo 1472, main, 2212 matches) |
+| Result | **3-2 WIN** |
+| Elo Change | +3.4 (1468 -> 1471) |
+| Duration | **50s** (fastest yet!) |
+
+| Game | Map | Winner | Turns |
+|---|---|---|---|
+| 1 | tree_of_life | **buzzing bees** | 2000 |
+| 2 | starry_night | 5goats | 2000 |
+| 3 | pls_buy_cucats_merch | **buzzing bees** | 2000 |
+| 4 | git_branches | **buzzing bees** | 2000 |
+| 5 | cold | 5goats | 2000 |
+
+**Key observations:**
+- 2-match win streak (v8 + v9)!
+- Won tree_of_life (new map), pls_buy_cucats_merch (consistent win), git_branches (consistent win)
+- Lost starry_night and cold
+- cold is a consistent loss across versions (lost in v1 and now v9)
+- Beat a higher-Elo, experienced opponent (1472 Elo, 2212 matches)
+- 50s match duration -- v9 is our fastest
+
+---
+
+## Elo Trajectory (Updated)
+
+```
+Match 1 (v1): 1500 -> 1490 (-10)
+Match 2 (v2): 1490 -> 1487 (-3)
+Match 3 (v2): 1487 -> 1490 (+3)
+Match 4 (v4): 1490 -> 1474 (-16)  <-- v4 regression
+Match 5 (v4): 1474 -> 1464 (-10)  <-- v4 continues to lose
+Match 6 (v8): 1464 -> 1468 (+4)   <-- recovery begins
+Match 7 (v9): 1468 -> 1471 (+3)   <-- v9 continuing recovery
+```
+
+**Elo trend reversed! Two consecutive wins recovering from v4 crash.**
+
+---
+
+## Map Win/Loss Tracker (all versions)
+
+| Map | Wins | Losses | Notes |
+|---|---|---|---|
+| git_branches | 3 | 0 | Consistent win (v2, v8, v9) |
+| pls_buy_cucats_merch | 2 | 0 | Consistent win (v1, v9) |
+| tiles | 2 | 0 | Consistent win (v2, v8) |
+| landscape | 1 | 1 | Won v8, lost v1 |
+| tree_of_life | 1 | 0 | Won v9 |
+| settlement | 1 | 0 | Won v2 |
+| sierpinski_evil | 1 | 0 | Won v2 |
+| wasteland | 1 | 0 | Won v4 |
+| default_medium1 | 1 | 2 | Won v2, lost v4 twice |
+| cold | 0 | 3 | Consistent loss (v1, v4, v9) |
+| shish_kebab | 0 | 2 | Consistent loss (v2, v8) |
+| battlebot | 0 | 2 | Lost v1, v4 |
+| galaxy | 0 | 2 | Lost v2, v4 |
+| starry_night | 0 | 1 | Lost v9 |
+| default_small1 | 0 | 1 | Lost v8 |
+
+**Strongest maps:** git_branches (3-0), pls_buy_cucats_merch (2-0), tiles (2-0)
+**Weakest maps:** cold (0-3), shish_kebab (0-2), battlebot (0-2), galaxy (0-2)
 
 ---
 
@@ -212,6 +329,4 @@ Match 5 (v4): 1474 -> 1464 (-10)  <-- v4 continues to lose
 
 | Rank | Elo | Team | Matches |
 |---|---|---|---|
-| #135 | 1483 | DODO | 805 |
-| #136 | 1468 | N | 2157 |
-| **#137** | **1464** | **buzzing bees** | **5** |
+| **#136** | **1471** | **buzzing bees** | **7** |
