@@ -1,12 +1,11 @@
-"""v25: Reduce wasteful exploration conveyors + time-based builder ramp.
+"""v26: Nearest-ore scoring on tight maps for faster ore claiming.
 
-Two changes:
-1. Distance-based explore Ti reserve: builders >7 tiles from core require 30 Ti
-   reserve before building conveyors during exploration (vs 5 default). Reduces
-   wasteful conveyor sprawl in areas unlikely to connect to core.
-2. Time-based econ_cap floor ramp: gradually allows more builders over time
-   (6 + rnd//200, capped at 10) even when harvesters are outside core vision.
+On tight/scarce maps (area<=625), switch from core-proximity scoring
+(builder_dist + core_dist*2) to pure nearest-to-builder scoring. On small
+maps every ore tile is contested -- grabbing the closest one ASAP matters
+more than minimizing conveyor chain length to core.
 
+v25: Distance-based explore Ti reserve + time-based builder ramp.
 v24: Extend sector-based exploration to balanced maps.
 v23: Sector-based exploration on large maps.
 v22: Wall-density-adaptive ore scoring.
@@ -277,11 +276,12 @@ class Player:
         # Maze maps (>15% walls): nearest to builder — core_dist misleads through walls
         # Open maps: core-proximate ore preferred — shorter conveyor chains
         is_maze = self._wall_density is not None and self._wall_density > 0.15
+        use_nearest = is_maze or map_mode == "tight"
         if ore_tiles:
             best, bd = None, 10**9
             for t in ore_tiles:
                 builder_dist = pos.distance_squared(t)
-                if is_maze:
+                if use_nearest:
                     score = builder_dist
                 else:
                     core_dist = t.distance_squared(self.core_pos) if self.core_pos else 0
