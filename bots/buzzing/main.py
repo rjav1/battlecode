@@ -89,7 +89,7 @@ class Player:
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
         if self.map_mode == "tight":
-            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 10)
+            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 8)
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (5 if rnd <= 150 else (8 if rnd <= 400 else 15))
         else:  # balanced
@@ -557,7 +557,7 @@ class Player:
         else:
             # Tight maps (area <= 625): original spread pattern from builder position
             idx = (mid * 3 + self.explore_idx
-                   + rnd // 100) % len(DIRS)
+                   + rnd // 50) % len(DIRS)
             d = DIRS[idx]
             dx, dy = d.delta()
             reach = max(w, h)

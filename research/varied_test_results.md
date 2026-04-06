@@ -1,25 +1,25 @@
 # Varied Test Results
-Record: 13W-7L-0D (65%)
+Record: 8W-12L-0D (40%)
 
 | # | Opponent | Map | Seed | Result |
 |---|----------|-----|------|--------|
-| 1 | balanced | tree_of_life | 5853 | WIN |
-| 2 | ladder_eco | pixel_forest | 5046 | WIN |
-| 3 | ladder_eco | arena | 265 | WIN |
-| 4 | balanced | landscape | 8969 | WIN |
-| 5 | ladder_eco | galaxy | 5042 | WIN |
-| 6 | barrier_wall | hourglass | 4351 | WIN |
-| 7 | ladder_rush | default_large1 | 2254 | LOSS |
-| 8 | ladder_eco | butterfly | 8355 | LOSS |
-| 9 | fast_expand | arena | 7307 | WIN |
-| 10 | smart_defense | gaussian | 4431 | LOSS |
-| 11 | ladder_eco | default_large1 | 9532 | LOSS |
-| 12 | smart_defense | arena | 7376 | LOSS |
-| 13 | smart_eco | shish_kebab | 6378 | WIN |
-| 14 | smart_defense | arena | 54 | LOSS |
-| 15 | barrier_wall | wasteland | 7631 | WIN |
-| 16 | smart_eco | settlement | 2161 | WIN |
-| 17 | balanced | corridors | 6239 | LOSS |
-| 18 | turtle | pixel_forest | 4122 | WIN |
-| 19 | smart_defense | settlement | 7939 | WIN |
-| 20 | balanced | pixel_forest | 8044 | WIN |
+| 1 | smart_defense | butterfly | 7963 | WIN |
+| 2 | sentinel_spam | gaussian | 2556 | LOSS |
+| 3 | balanced | pixel_forest | 6301 | WIN |
+| 4 | barrier_wall | corridors | 2058 | WIN |
+| 5 | ladder_rush | default_small1 | 9279 | LOSS |
+| 6 | fast_expand | cold | 8989 | WIN |
+| 7 | balanced | corridors | 7080 | LOSS |
+| 8 | smart_eco | cold | 9260 | LOSS |
+| 9 | turtle | galaxy | 403 | WIN |
+| 10 | barrier_wall | settlement | 7327 | WIN |
+| 11 | balanced | gaussian | 1842 | LOSS |
+| 12 | smart_eco | face | 6350 | LOSS |
+| 13 | smart_eco | dna | 3431 | WIN |
+| 14 | barrier_wall | settlement | 2331 | WIN |
+| 15 | turtle | butterfly | 6758 | LOSS |
+| 16 | adaptive | corridors | 3667 | LOSS |
+| 17 | balanced | mandelbrot | 1573 | LOSS |
+| 18 | ladder_rush | arena | 6960 | LOSS |
+| 19 | ladder_eco | binary_tree | 6429 | LOSS |
+| 20 | turtle | shish_kebab | 5457 | LOSS |
