@@ -1,4 +1,4 @@
-"""v18: Fix econ_cap floor — large maps no longer starved at 4 builders.
+"""v19: Harvest axionite ore tiles too — more harvesters, better tiebreakers.
 
 d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
 gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
@@ -146,7 +146,7 @@ class Player:
             e = c.get_tile_env(t)
             if e != Environment.WALL:
                 passable.add(t)
-                if e == Environment.ORE_TITANIUM and c.get_tile_building_id(t) is None:
+                if e in (Environment.ORE_TITANIUM, Environment.ORE_AXIONITE) and c.get_tile_building_id(t) is None:
                     ore_tiles.append(t)
 
         rnd = c.get_current_round()
