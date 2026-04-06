@@ -1,10 +1,55 @@
 # Varied Test Results
-Record: 4W-1L-0D (80%)
+Record: 29W-21L-0D (58%)
 
 | # | Opponent | Map | Seed | Result |
 |---|----------|-----|------|--------|
-| 1 | starter | dna | 7775 | WIN |
-| 2 | starter | wasteland | 824 | LOSS |
-| 3 | starter | shish_kebab | 775 | WIN |
-| 4 | starter | default_small2 | 6210 | WIN |
-| 5 | starter | butterfly | 9042 | WIN |
+| 1 | rusher | default_small1 | 5546 | LOSS |
+| 2 | adaptive | landscape | 4033 | WIN |
+| 3 | ladder_eco | face | 671 | WIN |
+| 4 | sentinel_spam | wasteland | 2010 | WIN |
+| 5 | balanced | default_medium1 | 2799 | WIN |
+| 6 | barrier_wall | binary_tree | 8672 | WIN |
+| 7 | ladder_rush | default_large1 | 8302 | LOSS |
+| 8 | fast_expand | wasteland | 8760 | LOSS |
+| 9 | sentinel_spam | default_large1 | 8607 | WIN |
+| 10 | balanced | mandelbrot | 141 | LOSS |
+| 11 | adaptive | mandelbrot | 5910 | WIN |
+| 12 | barrier_wall | hourglass | 382 | WIN |
+| 13 | turtle | hourglass | 7407 | WIN |
+| 14 | smart_defense | arena | 8584 | LOSS |
+| 15 | adaptive | mandelbrot | 5095 | WIN |
+| 16 | smart_eco | cold | 5202 | WIN |
+| 17 | rusher | gaussian | 3699 | LOSS |
+| 18 | smart_defense | arena | 3135 | LOSS |
+| 19 | smart_eco | arena | 7285 | WIN |
+| 20 | turtle | shish_kebab | 7934 | LOSS |
+| 21 | smart_defense | default_small2 | 850 | LOSS |
+| 22 | ladder_rush | shish_kebab | 765 | WIN |
+| 23 | turtle | binary_tree | 2730 | WIN |
+| 24 | rusher | default_small1 | 257 | LOSS |
+| 25 | ladder_rush | arena | 8514 | LOSS |
+| 26 | balanced | butterfly | 3452 | WIN |
+| 27 | barrier_wall | default_large2 | 7935 | LOSS |
+| 28 | barrier_wall | settlement | 3869 | LOSS |
+| 29 | ladder_rush | default_large1 | 1306 | LOSS |
+| 30 | adaptive | binary_tree | 3169 | WIN |
+| 31 | adaptive | arena | 8907 | WIN |
+| 32 | barrier_wall | wasteland | 5029 | WIN |
+| 33 | barrier_wall | gaussian | 3595 | LOSS |
+| 34 | ladder_rush | settlement | 988 | WIN |
+| 35 | barrier_wall | corridors | 4701 | WIN |
+| 36 | ladder_eco | wasteland | 6174 | WIN |
+| 37 | barrier_wall | landscape | 6289 | WIN |
+| 38 | smart_eco | corridors | 5812 | LOSS |
+| 39 | rusher | default_medium1 | 8713 | WIN |
+| 40 | smart_defense | face | 1670 | WIN |
+| 41 | smart_eco | gaussian | 2164 | LOSS |
+| 42 | turtle | shish_kebab | 3656 | LOSS |
+| 43 | rusher | pixel_forest | 5501 | WIN |
+| 44 | smart_eco | default_large1 | 7745 | LOSS |
+| 45 | ladder_rush | shish_kebab | 8641 | WIN |
+| 46 | smart_defense | arena | 5278 | LOSS |
+| 47 | rusher | cold | 4112 | WIN |
+| 48 | ladder_rush | default_small1 | 1151 | LOSS |
+| 49 | adaptive | wasteland | 6315 | WIN |
+| 50 | fast_expand | default_large2 | 3116 | WIN |

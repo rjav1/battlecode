@@ -56,13 +56,11 @@ class Player:
         self.fixing_chain = False
         self.fix_path = []
         self.fix_idx = 0
-        self.gunner_placed = 0  # count of gunners built
         self._wall_density = None
         self._ore_density = None  # ore tiles / total tiles in vision (ore-rich map detection)
         self._claimed_pos = None    # Position of our placed claim marker
         self._marker_placed = False # Whether we've placed the marker this target
         self._bridge_target = None       # ore tile needing a bridge shortcut next round
-        self._pending_gunner_ammo = None  # (gunner_pos, facing_dir) for ammo conveyor follow-up
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -72,8 +70,6 @@ class Player:
             self._builder(c)
         elif t == EntityType.SENTINEL:
             self._sentinel(c)
-        elif t == EntityType.GUNNER:
-            self._gunner(c)
 
     def _core(self, c):
         # Detect map size on first round
@@ -96,7 +92,7 @@ class Player:
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (5 if rnd <= 150 else (8 if rnd <= 400 else 15))
         else:  # balanced
-            cap = 3 if rnd <= 25 else (4 if rnd <= 100 else (6 if rnd <= 300 else 8))
+            cap = 4 if rnd <= 30 else (6 if rnd <= 100 else (7 if rnd <= 200 else 8))
         pos = c.get_position()
         vis_harv = 0
         for eid in c.get_nearby_buildings():
@@ -156,13 +152,6 @@ class Player:
                         return
             except Exception:
                 continue
-
-    def _gunner(self, c):
-        if c.get_action_cooldown() != 0 or c.get_ammo_amount() < 2:
-            return
-        target = c.get_gunner_target()
-        if target and c.can_fire(target):
-            c.fire(target)
 
     def _builder(self, c):
         pos = c.get_position()
@@ -337,16 +326,6 @@ class Player:
                             break
             self._bridge_target = None
             if built:
-                return
-
-        # Spend-down defense: build extra gunner when Ti is high
-        if (rnd > 300 and self.core_pos
-                and self.harvesters_built >= 3
-                and pos.distance_squared(self.core_pos) <= 25
-                and c.get_action_cooldown() == 0
-                and c.get_global_resources()[0] > 500
-                and self.gunner_placed < 2):
-            if self._place_gunner(c, pos):
                 return
 
         # Attacker assignment: after round 800, 4+ harvesters, id%6==5
@@ -585,70 +564,6 @@ class Player:
         core_dist_sq = pos.distance_squared(self.core_pos) if self.core_pos else 0
         explore_reserve = 30 if core_dist_sq > 50 else 5
         self._nav(c, pos, far, passable, ti_reserve=explore_reserve)
-
-    # -------------------------------------------------------- Gunner placement
-    def _place_gunner(self, c, pos):
-        """Place a gunner near core facing enemy, then build ammo conveyor next turn."""
-        if c.get_action_cooldown() != 0:
-            return False
-
-        # Follow-up: build ammo conveyor for gunner placed last turn
-        if self._pending_gunner_ammo is not None:
-            gp, facing = self._pending_gunner_ammo
-            self._pending_gunner_ammo = None
-            # Build conveyor on gunner's non-facing side, facing toward gunner
-            for d in DIRS:
-                if d == facing:
-                    continue
-                conv_pos = gp.add(d)
-                conv_facing = d.opposite()  # face toward gunner
-                if pos.distance_squared(conv_pos) <= 2:
-                    try:
-                        if c.can_build_conveyor(conv_pos, conv_facing):
-                            c.build_conveyor(conv_pos, conv_facing)
-                            return True
-                    except Exception:
-                        pass
-            # Couldn't build — not adjacent or all sides blocked; continue to normal logic
-            return False
-
-        # Recount nearby gunners each call
-        gunner_count = 0
-        for eid in c.get_nearby_buildings():
-            try:
-                if (c.get_entity_type(eid) == EntityType.GUNNER
-                        and c.get_team(eid) == c.get_team()):
-                    gunner_count += 1
-            except Exception:
-                pass
-        if gunner_count >= 2:
-            return False
-
-        ti = c.get_global_resources()[0]
-        if ti < c.get_gunner_cost()[0] + 10:
-            return False
-
-        enemy_dir = self._get_enemy_direction(c)
-        if not enemy_dir:
-            return False
-
-        enemy_target = self._get_enemy_core_pos(c) or self.core_pos.add(enemy_dir)
-
-        # Try building adjacent to current position first, then walk toward core
-        for d in self._rank(pos, enemy_target):
-            sp = pos.add(d)
-            if c.can_build_gunner(sp, enemy_dir):
-                c.build_gunner(sp, enemy_dir)
-                self.gunner_placed += 1
-                self._pending_gunner_ammo = (sp, enemy_dir)
-                return True
-
-        # Walk toward core area to find a good spot
-        if self.core_pos and pos.distance_squared(self.core_pos) > 25:
-            self._walk_to(c, pos, self.core_pos)
-            return True
-
-        return False
 
     # ------------------------------------------------------------ Barriers
     def _build_barriers(self, c, pos):
