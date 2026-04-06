@@ -1,8 +1,8 @@
-"""buzzing bees - economy bot with sentinels and attacker.
+"""v7: Economy + bridges + sentinels + attacker + barriers + moderate scaling.
 
-d.opposite() conveyors for resource delivery (proven 30K+ Ti).
-Splitter-based sentinel ammo (proven pattern from splitter_test).
-Attacker walks toward enemy core after economy established.
+d.opposite() conveyors, BFS nav, moderate builder scaling (cap 20), lower reserves,
+bridge fallback, sentinel placement, attacker raider, symmetry detection, road-destroy fix,
+barrier walls on enemy-facing side of core.
 """
 
 from collections import deque
@@ -21,6 +21,7 @@ class Player:
         self.my_id = None
         self.harvesters_built = 0
         self._enemy_dir = None
+        self._enemy_core = None
         # Splitter-sentinel state machine
         self.sent_step = 0  # 0=idle, 1=destroy, 2=splitter, 3=branch, 4=sentinel, 5=reset
         self.sent_conv_pos = None
@@ -28,6 +29,7 @@ class Player:
         self.sent_branch_pos = None
         self.sent_sentinel_pos = None
         self.sent_branch_dir = None
+        self.is_attacker = False
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -43,14 +45,33 @@ class Player:
             return
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
-        cap = 3 if rnd <= 50 else (5 if rnd <= 300 else 7)
+        if rnd <= 20:
+            cap = 3
+        elif rnd <= 100:
+            cap = 6
+        elif rnd <= 300:
+            cap = 10
+        elif rnd <= 600:
+            cap = 15
+        else:
+            cap = 20
+        pos = c.get_position()
+        vis_harv = 0
+        for eid in c.get_nearby_buildings():
+            try:
+                if (c.get_entity_type(eid) == EntityType.HARVESTER
+                        and c.get_team(eid) == c.get_team()):
+                    vis_harv += 1
+            except Exception:
+                pass
+        econ_cap = vis_harv * 2 + 3
+        cap = min(cap, econ_cap)
         if units >= cap:
             return
         ti = c.get_global_resources()[0]
         cost = c.get_builder_bot_cost()[0]
-        if ti < cost + 30:
+        if ti < cost + 10:
             return
-        pos = c.get_position()
         for d in DIRS:
             sp = pos.add(d)
             if c.can_spawn(sp):
@@ -109,27 +130,37 @@ class Player:
 
         rnd = c.get_current_round()
 
-        # Sentinel builder: id%5==1, after round 1000, near core, 200+ Ti
-        if ((self.my_id or 0) % 5 == 1 and rnd > 1000
+        # Attacker assignment: after round 500, 4+ harvesters, id%6==5
+        if (not self.is_attacker and rnd > 500
+                and self.harvesters_built >= 4
+                and (self.my_id or 0) % 6 == 5):
+            self.is_attacker = True
+        if self.is_attacker:
+            self._attack(c, pos, passable)
+            return
+
+        # Sentinel builder: id%5==1, after round 200, 3+ harvesters
+        if ((self.my_id or 0) % 5 == 1 and rnd > 200
                 and self.harvesters_built >= 3 and self.core_pos
                 and self.sent_step < 6
-                and (self.sent_step > 0 or pos.distance_squared(self.core_pos) <= 36)
-                and c.get_global_resources()[0] >= 200):
+                and c.get_global_resources()[0] >= 150):
             if self._build_sentinel_infra(c, pos):
                 return
 
-        # Attacker: id%4==2, after round 500, 4+ harvesters
-        if ((self.my_id or 0) % 4 == 2 and rnd > 500
-                and self.harvesters_built >= 4):
-            self._attack(c, pos, passable)
-            return
+        # Barrier placement near core
+        if (rnd >= 80 and self.core_pos
+                and pos.distance_squared(self.core_pos) <= 20
+                and c.get_action_cooldown() == 0
+                and c.get_global_resources()[0] >= 50):
+            if self._build_barriers(c, pos):
+                return
 
         # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
             ore = self._best_adj_ore(c, pos)
             if ore is not None:
                 ti = c.get_global_resources()[0]
-                if ti >= c.get_harvester_cost()[0] + 15:
+                if ti >= c.get_harvester_cost()[0] + 5:
                     c.build_harvester(ore)
                     self.harvesters_built += 1
                     self.target = None
@@ -160,13 +191,26 @@ class Player:
         if bfs_dir is not None and bfs_dir != dirs[0]:
             dirs = [bfs_dir] + [d for d in dirs if d != bfs_dir]
 
+        w, h = c.get_map_width(), c.get_map_height()
         for d in dirs:
             nxt = pos.add(d)
+            if nxt.x < 0 or nxt.x >= w or nxt.y < 0 or nxt.y >= h:
+                continue
             if c.get_action_cooldown() == 0:
                 ti = c.get_global_resources()[0]
                 cc = c.get_conveyor_cost()[0]
-                if ti >= cc + 15:
+                if ti >= cc + 5:
                     face = d.opposite()
+                    # Destroy allied road so we can place conveyor
+                    bid = c.get_tile_building_id(nxt)
+                    if bid is not None:
+                        try:
+                            if (c.get_entity_type(bid) == EntityType.ROAD
+                                    and c.get_team(bid) == c.get_team()):
+                                if c.can_destroy(nxt):
+                                    c.destroy(nxt)
+                        except Exception:
+                            pass
                     if c.can_build_conveyor(nxt, face):
                         c.build_conveyor(nxt, face)
                         return
@@ -178,17 +222,17 @@ class Player:
         if c.get_action_cooldown() == 0:
             ti = c.get_global_resources()[0]
             rc = c.get_road_cost()[0]
-            if ti >= rc + 10:
+            if ti >= rc + 5:
                 for d in dirs:
                     if c.can_build_road(pos.add(d)):
                         c.build_road(pos.add(d))
                         return
 
-        # Bridge fallback (only when flush with Ti)
+        # Bridge fallback
         if c.get_action_cooldown() == 0:
             ti = c.get_global_resources()[0]
             bc = c.get_bridge_cost()[0]
-            if ti >= bc + 200:
+            if ti >= bc + 50:
                 for d in dirs[:3]:
                     for step in range(2, 4):
                         dx, dy = d.delta()
@@ -222,7 +266,7 @@ class Player:
                         sent_count += 1
                 except Exception:
                     pass
-            if sent_count >= 2:
+            if sent_count >= 3:
                 self.sent_step = 6
                 return False
             # Find conveyor near core to replace
@@ -281,7 +325,7 @@ class Player:
                 self._walk_to(c, pos, self.sent_conv_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_splitter_cost()[0] + 50:
+            if ti < c.get_splitter_cost()[0] + 30:
                 return True
             if c.can_build_splitter(self.sent_conv_pos, self.sent_conv_dir):
                 c.build_splitter(self.sent_conv_pos, self.sent_conv_dir)
@@ -296,7 +340,7 @@ class Player:
                 self._walk_to(c, pos, self.sent_branch_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_conveyor_cost()[0] + 50:
+            if ti < c.get_conveyor_cost()[0] + 30:
                 return True
             if c.can_build_conveyor(self.sent_branch_pos, self.sent_branch_dir):
                 c.build_conveyor(self.sent_branch_pos, self.sent_branch_dir)
@@ -311,7 +355,7 @@ class Player:
                 self._walk_to(c, pos, self.sent_sentinel_pos)
                 return True
             ti = c.get_global_resources()[0]
-            if ti < c.get_sentinel_cost()[0] + 50:
+            if ti < c.get_sentinel_cost()[0] + 30:
                 return True
             face = self.sent_branch_dir
             if c.can_build_sentinel(self.sent_sentinel_pos, face):
@@ -335,6 +379,62 @@ class Player:
 
         return False
 
+    # ------------------------------------------------------------ Barriers
+    def _build_barriers(self, c, pos):
+        """Place barriers on the enemy-facing side of core, 2-3 tiles out."""
+        enemy_dir = self._get_enemy_direction(c)
+        if not enemy_dir:
+            return False
+
+        # Count existing nearby barriers
+        barrier_count = 0
+        for eid in c.get_nearby_buildings():
+            try:
+                if (c.get_entity_type(eid) == EntityType.BARRIER
+                        and c.get_team(eid) == c.get_team()):
+                    barrier_count += 1
+            except Exception:
+                pass
+        if barrier_count >= 6:
+            return False
+
+        ti = c.get_global_resources()[0]
+        if ti < c.get_barrier_cost()[0] + 40:
+            return False
+
+        dx, dy = enemy_dir.delta()
+        # Perpendicular directions for spreading the wall
+        perp_left = enemy_dir.rotate_left().rotate_left()
+        perp_right = enemy_dir.rotate_right().rotate_right()
+
+        # Try positions 2-3 tiles from core toward enemy, spread perpendicular
+        # Skip every other perpendicular offset to leave gaps for builders
+        for dist in (3, 2):
+            cx = self.core_pos.x + dx * dist
+            cy = self.core_pos.y + dy * dist
+            center = Position(cx, cy)
+
+            for offset in (0, -2, 2, -1, 1):
+                pdx, pdy = (perp_right if offset > 0 else perp_left).delta()
+                abs_off = abs(offset)
+                bp = Position(center.x + pdx * abs_off, center.y + pdy * abs_off)
+
+                # Skip odd offsets to leave gaps
+                if abs(offset) == 1:
+                    continue
+
+                if not c.is_in_vision(bp):
+                    continue
+                if pos.distance_squared(bp) > 2:
+                    continue
+                try:
+                    if c.can_build_barrier(bp):
+                        c.build_barrier(bp)
+                        return True
+                except Exception:
+                    pass
+        return False
+
     # ------------------------------------------------------------ Attack
     def _attack(self, c, pos, passable):
         if c.get_action_cooldown() == 0:
@@ -347,9 +447,23 @@ class Player:
                             return
                 except Exception:
                     pass
+            # Move onto adjacent enemy buildings to attack them
+            for d in DIRS:
+                ap = pos.add(d)
+                abid = c.get_tile_building_id(ap)
+                if abid is not None:
+                    try:
+                        if c.get_team(abid) != c.get_team():
+                            if c.get_move_cooldown() == 0 and c.can_move(d):
+                                c.move(d)
+                                return
+                    except Exception:
+                        pass
         enemy_pos = self._get_enemy_core_pos(c)
         if enemy_pos:
             self._nav(c, pos, enemy_pos, passable)
+        else:
+            self._explore(c, pos, passable)
 
     # ------------------------------------------------------------ Helpers
     def _walk_to(self, c, pos, target):
@@ -364,7 +478,7 @@ class Player:
         if c.get_action_cooldown() == 0:
             ti = c.get_global_resources()[0]
             rc = c.get_road_cost()[0]
-            if ti >= rc + 10:
+            if ti >= rc + 5:
                 for try_d in [d, d.rotate_left(), d.rotate_right()]:
                     nxt = pos.add(try_d)
                     if c.can_build_road(nxt):
@@ -373,7 +487,7 @@ class Player:
 
     def _best_adj_ore(self, c, pos):
         best, bd = None, 10**9
-        for d in Direction:
+        for d in DIRS:
             p = pos.add(d)
             if c.can_build_harvester(p):
                 dist = p.distance_squared(self.core_pos) if self.core_pos else 0
@@ -442,6 +556,8 @@ class Player:
         return self._enemy_dir
 
     def _get_enemy_core_pos(self, c):
+        if self._enemy_core is not None:
+            return self._enemy_core
         if not self.core_pos:
             return None
         w, h = c.get_map_width(), c.get_map_height()
@@ -457,5 +573,7 @@ class Player:
         for m in mirrors:
             d = Position(cx, cy).direction_to(m)
             if d == enemy_dir:
+                self._enemy_core = m
                 return m
-        return mirrors[0]
+        self._enemy_core = mirrors[0]
+        return self._enemy_core
