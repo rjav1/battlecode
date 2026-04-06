@@ -1,8 +1,9 @@
-"""v14: Lower reserves (cost+5), faster exploration rotation (//100) — closing economy gap.
+"""v15: Chain-fix for winding conveyor paths.
 
-d.opposite() conveyors, BFS nav, moderate builder scaling, lower reserves (cost+5 everywhere),
-bridge fallback, gunner placement, attacker raider, symmetry detection, road-destroy fix,
-barrier walls on enemy-facing side of core. Gunners replace sentinels (cheaper, lower scale).
+d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
+gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
+NEW: After placing first 2 harvesters, if outbound path was winding (3+ direction
+changes), walk back along recorded path fixing conveyor directions behind us.
 """
 
 from collections import deque
@@ -30,6 +31,9 @@ class Player:
         self.sent_sentinel_pos = None
         self.sent_branch_dir = None
         self.is_attacker = False
+        self.fixing_chain = False
+        self.fix_path = []
+        self.fix_idx = 0
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -171,6 +175,11 @@ class Player:
             if self._build_barriers(c, pos):
                 return
 
+        # Chain-fix mode: walk back fixing conveyors
+        if self.fixing_chain and self.core_pos:
+            self._fix_chain(c, pos)
+            return
+
         # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
             ore = self._best_adj_ore(c, pos)
@@ -180,6 +189,22 @@ class Player:
                     c.build_harvester(ore)
                     self.harvesters_built += 1
                     self.target = None
+                    # Chain-fix for first 2 harvesters if path is winding
+                    if (self.core_pos and len(self.fix_path) >= 4
+                            and self.harvesters_built <= 2):
+                        changes = 0
+                        for i in range(1, len(self.fix_path) - 1):
+                            d1 = self.fix_path[i-1].direction_to(self.fix_path[i])
+                            d2 = self.fix_path[i].direction_to(self.fix_path[i+1])
+                            if d1 != d2:
+                                changes += 1
+                        if changes >= 3:
+                            self.fixing_chain = True
+                            self.fix_idx = len(self.fix_path) - 1
+                        else:
+                            self.fix_path = []
+                    else:
+                        self.fix_path = []
                     return
 
         # Pick nearest visible ore
@@ -189,6 +214,8 @@ class Player:
                 d = pos.distance_squared(t)
                 if d < bd:
                     best, bd = t, d
+            if best != self.target:
+                self.fix_path = []
             self.target = best
         elif self.target and c.is_in_vision(self.target):
             if c.get_tile_building_id(self.target) is not None:
@@ -231,6 +258,8 @@ class Player:
                         c.build_conveyor(nxt, face)
                         return
             if c.get_move_cooldown() == 0 and c.can_move(d):
+                if self.target is not None and len(self.fix_path) < 30:
+                    self.fix_path.append(pos)
                 c.move(d)
                 return
 
@@ -489,6 +518,61 @@ class Player:
             self._nav(c, pos, enemy_pos, passable)
         else:
             self._explore(c, pos, passable)
+
+    # --------------------------------------------------------- Chain fix
+    def _fix_chain(self, c, pos):
+        """Walk back along recorded path, fixing conveyors behind us."""
+        if self.fix_idx < 0:
+            self.fixing_chain = False
+            self.fix_path = []
+            return
+
+        # Fix the tile BEHIND us (fix_idx + 1) — within action radius
+        behind_idx = self.fix_idx + 1
+        if behind_idx < len(self.fix_path) and c.get_action_cooldown() == 0:
+            behind_pos = self.fix_path[behind_idx]
+            if pos.distance_squared(behind_pos) <= 2 and c.is_in_vision(behind_pos):
+                correct_facing = behind_pos.direction_to(self.fix_path[self.fix_idx])
+                if correct_facing != Direction.CENTRE:
+                    bid = c.get_tile_building_id(behind_pos)
+                    if bid is not None:
+                        try:
+                            et = c.get_entity_type(bid)
+                            tm = c.get_team(bid)
+                            if tm == c.get_team() and et == EntityType.CONVEYOR:
+                                if c.get_direction(bid) != correct_facing:
+                                    old_dir = c.get_direction(bid)
+                                    c.destroy(behind_pos)
+                                    if c.can_build_conveyor(behind_pos, correct_facing):
+                                        c.build_conveyor(behind_pos, correct_facing)
+                                    else:
+                                        # Fallback: restore
+                                        c.build_conveyor(behind_pos, old_dir)
+                        except Exception:
+                            pass
+
+        # Advance along path toward core
+        target = self.fix_path[self.fix_idx]
+        if pos == target:
+            self.fix_idx -= 1
+            if self.fix_idx < 0:
+                self.fixing_chain = False
+                self.fix_path = []
+            return
+
+        d = pos.direction_to(target)
+        if d == Direction.CENTRE:
+            self.fix_idx -= 1
+            return
+        for try_d in [d, d.rotate_left(), d.rotate_right(),
+                      d.rotate_left().rotate_left(), d.rotate_right().rotate_right()]:
+            if c.get_move_cooldown() == 0 and c.can_move(try_d):
+                c.move(try_d)
+                return
+
+        # Stuck — bail
+        self.fixing_chain = False
+        self.fix_path = []
 
     # ------------------------------------------------------------ Helpers
     def _walk_to(self, c, pos, target):
