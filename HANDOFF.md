@@ -13,19 +13,24 @@
 - PhD/quant rigor. Measure everything. No assumptions.
 
 ## CURRENT STATE:
-- Bot: v34, ~829 lines, Version 36 on ladder
-- Elo: ~1488, should climb now with v32-v34 auto-loss fixes
-- Ladder record: 24W-30L across 54 matches (44%), but latest versions untested
+- Bot: v36, ~840 lines, deploying to ladder
+- Elo: ~1488, major fixes in v36 should push up significantly
+- Ladder record: 24W-30L across 54 matches (44%), but v34+ untested on ladder
 - Local win rate vs realistic opponents: 70% (was 33% before v32-v34 fixes, +37pp)
 
 ## WHAT'S LIVE ON LADDER:
-- v33: sector exploration diversity + early barriers on tight maps
-- GitHub: github.com/rjav1/battlecode — all pushed
+- v33 (submitting v36): sector exploration diversity + early barriers + econ_cap fix + tight gunners
+- GitHub: github.com/rjav1/battlecode — needs push after v36 deploy
 
-## WHAT JUST HAPPENED:
-- v32: Fixed face auto-loss (0-5 → WIN via early barriers against rush)
-- v33: Fixed cold auto-loss (9.7K → 19.7K Ti via prime-multiplier exploration diversity)
-- A final-benchmark agent is currently running v33 vs ladder_eco + ladder_rush on 10 maps
+## WHAT JUST HAPPENED (this session):
+- v36: Fixed econ_cap ceiling (was max 10, now expand=20, balanced=15, tight=12)
+  - Galaxy went from 10 → 20 units. Builder cap no longer bottlenecks.
+- v36: Enabled gunners on tight maps (round 60) — was COMPLETELY BLOCKED before
+  - Face/shish_kebab core destructions were caused by zero gunners on tight maps
+- v36: Enabled mid-game barriers on tight maps
+- Research completed: BFS strategies, ladder analysis, armed gunners plan, spend-down, Ax tiebreaker
+- Key finding: spend-down is cap-driven not threshold-driven (econ_cap fix IS the spend-down fix)
+- Key finding: we mine 0 Ax → any opponent with 1 refined Ax auto-wins TB#1
 
 ## AUTO-LOSS MAP STATUS (ALL ADDRESSED):
 - face: 0-5 → FIXED (v32 early barriers, 1.8K→13.8K Ti)
@@ -37,6 +42,14 @@
 - d.opposite() conveyors = ONLY working approach. Roads-first FAILED 3 TIMES. NEVER attempt again.
 - Conveyors can only face cardinal directions (N/S/E/W). Diagonal movement creates gaps but fixing it is WORSE (speed loss > gap cost).
 - Chain connectivity is NOT the primary bottleneck (proven by v32 investigation).
+
+## KEY RESEARCH (April 6 session):
+- research/bfs_strategies_apr6.md — 7 ranked strategies (Chain Census #1)
+- research/ladder_analysis_apr6.md — full ladder intel + non-obvious mechanics
+- research/armed_gunners_plan.md — complete splitter→sentinel integration plan
+- research/spend_down_analysis.md — hoard is cap-driven, thresholds are fine
+- research/gunner_timing_analysis.md — tight maps had ZERO gunners
+- research/v36_econ_cap_test.md — unit cap fix verified (10→20 units)
 
 ## DEAD ENDS (proven, never retry):
 - Roads-first navigation (3 failures)
@@ -76,13 +89,15 @@
 - smart_eco, smart_defense, smart_hybrid — intermediate opponents
 - sentinel_spam, balanced, barrier_wall, fast_expand, rusher, turtle, etc.
 
-## NEXT PRIORITIES (from data):
-1. Check final-benchmark results (agent running now)
-2. Galaxy (0-8) still unsolved — needs investigation  
-3. Arena (0-4) close losses — needs tiebreaker edge
-4. Study actual ladder replays (need Chrome connected)
-5. Armed gunners (splitter ammo pattern proven but never properly integrated)
-6. Consider completely different architecture if current one hits ceiling
+## NEXT PRIORITIES (from data, April 6):
+1. Monitor v36 ladder performance (econ_cap fix + tight gunners)
+2. Armed gunners v37 (splitter ammo pattern — plan ready at research/armed_gunners_plan.md)
+3. Ax tiebreaker — late-game foundry for TB#1 wins (research in progress)
+4. Chain census via markers — detect/repair broken conveyor chains (highest BFS ceiling)
+5. Attacker targets infrastructure not core (conveyors 20HP vs core 500HP)
+6. Bridge-first expansion (Blue Dragon uses 33 bridges, we use 0-2)
+7. Earlier gunner timing on balanced maps (120 vs 200)
+8. Study actual ladder replays (need Chrome connected)
 
 ## LADDER NEMESES (0-14 combined):
 - The Defect (1521 Elo): broadly superior on all maps

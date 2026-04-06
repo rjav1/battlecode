@@ -1,18 +1,17 @@
-"""v34: Raise tight builder cap 7->15 for arena ore coverage.
+"""v37: Armed sentinel — splice splitter+branch+sentinel off existing conveyor chain
+at round 1000+ for late-game area denial. Stateful multi-round build process.
 
-arena (25x25) classified as tight but only had cap=7 builders. ladder_eco
-uses 40 builders to outmine us. Raising tight cap to 15 (from 3->5->7 to
-3->7->15) lets us cover all 14 ore tiles and outmine ladder_eco in pos1.
-No other code changes -- early barriers and tight explore preserved.
+v36: Fix econ_cap ceiling — expand time_floor to 20, balanced to 15, tight to 12. Expand builder cap 12->20. Fixes galaxy 10-unit cap that caused 0-8 ladder record.
+Also enables gunners on tight maps (round 60) — was completely blocked before.
 
+v34: Raise tight builder cap 7->15 for arena ore coverage.
 v33: Cold builder cap 10->15, tight early barriers.
-
 v31: Earlier gunner on expand maps for galaxy defense.
 v30: Spawn first builder toward nearest ore — faster first harvester.
 v29: Fix cold regression — marker only placed at distance > 2 (not adjacent).
 v28: Marker-based ore claiming — prevents duplicate harvester targeting.
 v27: Ore-density-aware maze detection for butterfly fragmented map.
-v26: Nearest-ore scoring on tight maps for faster ore claiming.
+v26: Nearest-ore scoring on tight maps for faster ore scaling.
 v25: Distance-based explore Ti reserve + time-based builder ramp.
 v24: Extend sector-based exploration to balanced maps.
 v23: Sector-based exploration on large maps.
@@ -25,6 +24,14 @@ from collections import deque
 from cambc import Controller, Direction, EntityType, Environment, Position
 
 DIRS = [d for d in Direction if d != Direction.CENTRE]
+
+
+def _perp_left(d):
+    return d.rotate_left().rotate_left()
+
+
+def _perp_right(d):
+    return d.rotate_right().rotate_right()
 
 
 class Player:
@@ -47,6 +54,11 @@ class Player:
         self._ore_density = None  # ore tiles / total tiles in vision (ore-rich map detection)
         self._claimed_pos = None    # Position of our placed claim marker
         self._marker_placed = False # Whether we've placed the marker this target
+        self._sentinel_step = 0        # 0=find chain, 1=walk to it, 2=destroy+build splitter, 3=build branch, 4=build sentinel, 5=done
+        self._sentinel_chain_pos = None  # position of the conveyor to replace
+        self._sentinel_chain_dir = None  # facing direction of that conveyor
+        self._sentinel_branch_dir = None # perpendicular direction for branch
+        self._sentinel_positions = {}    # planned positions: splitter, branch, sentinel
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -78,7 +90,7 @@ class Player:
         if self.map_mode == "tight":
             cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
         elif self.map_mode == "expand":
-            cap = 3 if rnd <= 30 else (6 if rnd <= 150 else (9 if rnd <= 400 else 12))
+            cap = 3 if rnd <= 30 else (6 if rnd <= 150 else (12 if rnd <= 400 else 16))
         else:  # balanced
             cap = 3 if rnd <= 25 else (5 if rnd <= 100 else (8 if rnd <= 300 else 10))
         pos = c.get_position()
@@ -90,7 +102,12 @@ class Player:
                     vis_harv += 1
             except Exception:
                 pass
-        time_floor = min(6 + rnd // 200, 10)
+        if self.map_mode == "expand":
+            time_floor = min(8 + rnd // 200, 15)
+        elif self.map_mode == "balanced":
+            time_floor = min(6 + rnd // 150, 12)
+        else:
+            time_floor = min(6 + rnd // 200, 10)
         econ_cap = max(time_floor, vis_harv * 3 + 4)
         cap = min(cap, econ_cap)
         if units >= cap:
@@ -271,20 +288,30 @@ class Player:
             self._attack(c, pos, passable)
             return
 
-        # Gunner builder: id%5==1, earlier on expand maps for galaxy defense
+        # Gunner builder: id%5==1, timing varies by map mode
         map_mode = getattr(self, 'map_mode', 'balanced')
-        gunner_round = 150 if map_mode == "expand" else 200
-        if (map_mode != "tight"
-                and (self.my_id or 0) % 5 == 1 and rnd > gunner_round
-                and self.harvesters_built >= 3 and self.core_pos
+        gunner_round = 60 if map_mode == "tight" else (120 if map_mode == "balanced" else 150)
+        harv_req = 1 if map_mode == "tight" else 3
+        if ((self.my_id or 0) % 5 == 1 and rnd > gunner_round
+                and self.harvesters_built >= harv_req and self.core_pos
                 and self.gunner_placed < 3
                 and c.get_global_resources()[0] >= 20):
             if self._place_gunner(c, pos):
                 return
 
-        # Barrier placement near core (skip on tight maps)
-        if (map_mode != "tight"
-                and rnd >= 80 and self.core_pos
+        # Armed sentinel: splice splitter+branch+sentinel off existing chain
+        if (not self.is_attacker
+                and self._sentinel_step < 5
+                and rnd >= 1000
+                and self.harvesters_built >= 5
+                and self.core_pos
+                and map_mode != "tight"
+                and c.get_global_resources()[0] >= 70):
+            if self._place_armed_sentinel(c, pos):
+                return
+
+        # Barrier placement near core
+        if (rnd >= 80 and self.core_pos
                 and pos.distance_squared(self.core_pos) <= 20
                 and c.get_action_cooldown() == 0
                 and c.get_global_resources()[0] >= 50):
@@ -540,6 +567,134 @@ class Player:
         # Walk toward core area to find a good spot
         if self.core_pos and pos.distance_squared(self.core_pos) > 25:
             self._walk_to(c, pos, self.core_pos)
+            return True
+
+        return False
+
+    # -------------------------------------------------------- Armed sentinel
+    def _place_armed_sentinel(self, c, pos):
+        """Build splitter+branch+sentinel off an existing conveyor chain.
+
+        Multi-round stateful build:
+        Step 0: Find allied conveyor, plan layout (splitter, branch, sentinel positions)
+        Step 1: Walk to the target conveyor
+        Step 2: Destroy conveyor + build splitter (same turn — destroy has no cooldown)
+        Step 3: Build branch conveyor perpendicular to chain
+        Step 4: Build sentinel at end of branch
+        """
+        if self._sentinel_step == 0:
+            # Find an allied conveyor to splice into
+            best_conv = None
+            best_dist = 10**9
+            my_team = c.get_team()
+            for eid in c.get_nearby_buildings():
+                try:
+                    if (c.get_entity_type(eid) == EntityType.CONVEYOR
+                            and c.get_team(eid) == my_team):
+                        epos = c.get_position(eid)
+                        edir = c.get_direction(eid)
+                        # Prefer conveyors closer to core (more resource flow)
+                        core_dist = epos.distance_squared(self.core_pos) if self.core_pos else 0
+                        # Check if at least one perpendicular direction has 2 empty tiles
+                        for branch_dir in [_perp_left(edir), _perp_right(edir)]:
+                            branch_pos = epos.add(branch_dir)
+                            sentinel_pos = branch_pos.add(branch_dir)
+                            try:
+                                if (c.is_in_vision(branch_pos) and c.is_in_vision(sentinel_pos)
+                                        and c.get_tile_env(branch_pos) != Environment.WALL
+                                        and c.get_tile_env(sentinel_pos) != Environment.WALL
+                                        and c.is_tile_empty(branch_pos)
+                                        and c.is_tile_empty(sentinel_pos)):
+                                    if core_dist < best_dist:
+                                        best_dist = core_dist
+                                        best_conv = (epos, edir, branch_dir, branch_pos, sentinel_pos)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+            if best_conv is None:
+                return False
+            self._sentinel_chain_pos, self._sentinel_chain_dir, self._sentinel_branch_dir, branch_p, sentinel_p = best_conv
+            self._sentinel_positions = {"branch": branch_p, "sentinel": sentinel_p}
+            self._sentinel_step = 1
+            self.target = None
+            self._claimed_pos = None
+            self._marker_placed = False
+            return True
+
+        if self._sentinel_step == 1:
+            # Walk to the target conveyor
+            if pos.distance_squared(self._sentinel_chain_pos) <= 2:
+                self._sentinel_step = 2
+            else:
+                self._walk_to(c, pos, self._sentinel_chain_pos)
+                return True
+
+        if self._sentinel_step == 2:
+            # Destroy conveyor + build splitter in same turn
+            if c.get_action_cooldown() != 0:
+                return True
+            if pos.distance_squared(self._sentinel_chain_pos) > 2:
+                self._walk_to(c, pos, self._sentinel_chain_pos)
+                return True
+            try:
+                if c.can_destroy(self._sentinel_chain_pos):
+                    c.destroy(self._sentinel_chain_pos)
+                if c.can_build_splitter(self._sentinel_chain_pos, self._sentinel_chain_dir):
+                    c.build_splitter(self._sentinel_chain_pos, self._sentinel_chain_dir)
+                    self._sentinel_step = 3
+                else:
+                    # Can't build splitter — give up
+                    self._sentinel_step = 5
+            except Exception:
+                self._sentinel_step = 5
+            return True
+
+        if self._sentinel_step == 3:
+            # Build branch conveyor
+            branch_pos = self._sentinel_positions["branch"]
+            if pos.distance_squared(branch_pos) > 2:
+                self._walk_to(c, pos, branch_pos)
+                return True
+            if c.get_action_cooldown() != 0:
+                return True
+            try:
+                if c.can_build_conveyor(branch_pos, self._sentinel_branch_dir):
+                    c.build_conveyor(branch_pos, self._sentinel_branch_dir)
+                    self._sentinel_step = 4
+                else:
+                    # Try the other perpendicular direction
+                    alt_dir = _perp_right(self._sentinel_chain_dir) if self._sentinel_branch_dir == _perp_left(self._sentinel_chain_dir) else _perp_left(self._sentinel_chain_dir)
+                    alt_branch = self._sentinel_chain_pos.add(alt_dir)
+                    alt_sentinel = alt_branch.add(alt_dir)
+                    if c.can_build_conveyor(alt_branch, alt_dir):
+                        c.build_conveyor(alt_branch, alt_dir)
+                        self._sentinel_branch_dir = alt_dir
+                        self._sentinel_positions["branch"] = alt_branch
+                        self._sentinel_positions["sentinel"] = alt_sentinel
+                        self._sentinel_step = 4
+                    else:
+                        self._sentinel_step = 5
+            except Exception:
+                self._sentinel_step = 5
+            return True
+
+        if self._sentinel_step == 4:
+            # Build sentinel
+            sentinel_pos = self._sentinel_positions["sentinel"]
+            if pos.distance_squared(sentinel_pos) > 2:
+                self._walk_to(c, pos, sentinel_pos)
+                return True
+            if c.get_action_cooldown() != 0:
+                return True
+            try:
+                if c.can_build_sentinel(sentinel_pos, self._sentinel_branch_dir):
+                    c.build_sentinel(sentinel_pos, self._sentinel_branch_dir)
+                    self._sentinel_step = 5
+                else:
+                    self._sentinel_step = 5
+            except Exception:
+                self._sentinel_step = 5
             return True
 
         return False
