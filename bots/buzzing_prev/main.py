@@ -1,4 +1,6 @@
-"""v21: Simplify gunner placement — no chain destruction.
+"""v22: Wall-density-adaptive ore scoring — maze maps use nearest-to-builder, open maps use core-proximate.
+
+v21: Simplify gunner placement — no chain destruction.
 
 v20: Prefer ore closer to core — shorter chains, faster delivery.
 
@@ -32,6 +34,7 @@ class Player:
         self.fix_path = []
         self.fix_idx = 0
         self.gunner_placed = 0  # count of gunners built
+        self._wall_density = None
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -131,7 +134,16 @@ class Player:
         else:
             self.stuck = 0
         self.last_pos = pos
-        map_mode = getattr(self, 'map_mode', 'balanced')
+        if not hasattr(self, 'map_mode'):
+            w, h = c.get_map_width(), c.get_map_height()
+            area = w * h
+            if area <= 625:
+                self.map_mode = "tight"
+            elif area >= 1600:
+                self.map_mode = "expand"
+            else:
+                self.map_mode = "balanced"
+        map_mode = self.map_mode
         if self.stuck > 12:
             self.target = None
             self.stuck = 0
@@ -140,14 +152,23 @@ class Player:
         # Scan vision
         ore_tiles = []
         passable = set()
+        wall_count = 0
+        total_count = 0
         for t in c.get_nearby_tiles():
             e = c.get_tile_env(t)
-            if e != Environment.WALL:
+            total_count += 1
+            if e == Environment.WALL:
+                wall_count += 1
+            else:
                 passable.add(t)
                 if e in (Environment.ORE_TITANIUM, Environment.ORE_AXIONITE) and c.get_tile_building_id(t) is None:
                     ore_tiles.append(t)
 
         rnd = c.get_current_round()
+
+        # Lock in wall density after round 5 (builder has moved, better sample)
+        if self._wall_density is None and rnd > 5 and total_count > 0:
+            self._wall_density = wall_count / total_count
 
         # Early barrier anti-rush: builder with 1+ harvester places 2 barriers near core
         if (rnd <= 30 and self.core_pos
@@ -249,13 +270,19 @@ class Player:
                         self.fix_path = []
                     return
 
-        # Pick ore: balance proximity to builder and proximity to core (short chains)
+        # Pick ore: wall-density-adaptive scoring
+        # Maze maps (>15% walls): nearest to builder — core_dist misleads through walls
+        # Open maps: core-proximate ore preferred — shorter conveyor chains
+        is_maze = self._wall_density is not None and self._wall_density > 0.15
         if ore_tiles:
             best, bd = None, 10**9
             for t in ore_tiles:
                 builder_dist = pos.distance_squared(t)
-                core_dist = t.distance_squared(self.core_pos) if self.core_pos else 0
-                score = builder_dist + core_dist * 2
+                if is_maze:
+                    score = builder_dist
+                else:
+                    core_dist = t.distance_squared(self.core_pos) if self.core_pos else 0
+                    score = builder_dist + core_dist * 2
                 if score < bd:
                     best, bd = t, score
             if best != self.target:
