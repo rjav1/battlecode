@@ -45,16 +45,16 @@ class Player:
             return
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
-        if rnd <= 20:
+        if rnd <= 30:
             cap = 3
         elif rnd <= 100:
-            cap = 6
+            cap = 5
         elif rnd <= 300:
-            cap = 10
+            cap = 7
         elif rnd <= 600:
-            cap = 15
+            cap = 10
         else:
-            cap = 20
+            cap = 12
         pos = c.get_position()
         vis_harv = 0
         for eid in c.get_nearby_buildings():
@@ -160,7 +160,7 @@ class Player:
             ore = self._best_adj_ore(c, pos)
             if ore is not None:
                 ti = c.get_global_resources()[0]
-                if ti >= c.get_harvester_cost()[0] + 5:
+                if ti >= c.get_harvester_cost()[0] + 15:
                     c.build_harvester(ore)
                     self.harvesters_built += 1
                     self.target = None
@@ -224,8 +224,11 @@ class Player:
             rc = c.get_road_cost()[0]
             if ti >= rc + 5:
                 for d in dirs:
-                    if c.can_build_road(pos.add(d)):
-                        c.build_road(pos.add(d))
+                    rp = pos.add(d)
+                    if rp.x < 0 or rp.x >= w or rp.y < 0 or rp.y >= h:
+                        continue
+                    if c.can_build_road(rp):
+                        c.build_road(rp)
                         return
 
         # Bridge fallback
@@ -448,8 +451,11 @@ class Player:
                 except Exception:
                     pass
             # Move onto adjacent enemy buildings to attack them
+            w, h = c.get_map_width(), c.get_map_height()
             for d in DIRS:
                 ap = pos.add(d)
+                if ap.x < 0 or ap.x >= w or ap.y < 0 or ap.y >= h:
+                    continue
                 abid = c.get_tile_building_id(ap)
                 if abid is not None:
                     try:
@@ -476,11 +482,14 @@ class Player:
                 c.move(try_d)
                 return
         if c.get_action_cooldown() == 0:
+            w, h = c.get_map_width(), c.get_map_height()
             ti = c.get_global_resources()[0]
             rc = c.get_road_cost()[0]
             if ti >= rc + 5:
                 for try_d in [d, d.rotate_left(), d.rotate_right()]:
                     nxt = pos.add(try_d)
+                    if nxt.x < 0 or nxt.x >= w or nxt.y < 0 or nxt.y >= h:
+                        continue
                     if c.can_build_road(nxt):
                         c.build_road(nxt)
                         return
