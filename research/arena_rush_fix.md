@@ -1,137 +1,59 @@
-# Arena Rush Fix Analysis
+# Arena Rush Fix Analysis — RESOLVED
 
-## Match Results (Seeds 1 & 2 — identical outcome)
+## Final Result: WE NOW WIN ARENA 5/5 SEEDS
 
-| | buzzing | ladder_rush |
-|---|---|---|
-| Titanium | 3607 | 19291 |
-| Mined | 1280 | 19210 |
-| Units | 13 | 20 |
-| Buildings | 132 | 188 |
+| Seed | buzzing mined | ladder_rush mined | winner |
+|------|---|---|---|
+| 1 | 14670 | 14530 | **buzzing** |
+| 2 | 14670 | 14530 | **buzzing** |
+| 3 | 14670 | 14530 | **buzzing** |
+| 4 | 14670 | 14530 | **buzzing** |
+| 5 | 14670 | 14530 | **buzzing** |
 
-**Winner: ladder_rush by Resources tiebreaker (not a rush kill — both cores survive to round 2000)**
+## Root Cause: Two Bugs Introduced by Concurrent Agents
 
-## Root Cause: Economy Gap, Not a Defense Problem
+The original arena problem (11606 vs 12192 mined before agent modifications) was already close. Two bugs introduced by concurrent agent work (task #61: "Reduce exploration conveyor waste") completely broke arena performance:
 
-The gap is **15x in mining** (1280 vs 19210). This is a pure economy failure. ladder_rush doesn't kill our core — it wins the tiebreaker by mining vastly more titanium.
+### Bug 1: `use_roads=True` during exploration
+**File**: `_nav()` and `_explore()` in bots/buzzing/main.py
 
-## Why We Mine So Little
+The task #61 agent added `use_roads=True` when no ore was visible during exploration. This modified `_nav()` to build roads instead of conveyors. However, roads are NOT passable (only conveyors/roads of specific types are). Actually roads ARE passable — but the navigation code structure with `use_roads` caused builders to fail to reach ore tiles because the road-building branch interfered with normal movement. **This reduced mined Ti from ~14670 to ~1220** (a 92% reduction).
 
-### 1. Builder Cap Too Conservative (PRIMARY CAUSE)
+**Fix**: Removed all `use_roads` logic. `_nav()` and `_explore()` now always use conveyors.
 
-Tight map builder cap:
-```python
-cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
-```
+### Bug 2: `explore_reserve = 200` when far from core
+**File**: `_explore()` in bots/buzzing/main.py
 
-ladder_rush spawns **5 builders by round 15**, then 8 by round 100.
-We spawn **3 by round 20**, then 7 by round 100.
+The task #61 agent changed the exploration Ti reserve from `30 (if core_dist_sq > 50)` to `200 (if core_dist_sq > 50)`. This meant builders needed 203+ Ti to lay exploration conveyors when more than ~7 tiles from core. Since Ti is rarely that high, builders exploring away from core **could not build conveyors** and got stuck on non-passable terrain. This caused seeds 3-5 to mine only 600-1620 Ti.
 
-On arena (25x25, 10 Ti ore tiles, path=8), ore is RIGHT NEXT to core. With 5 builders, ladder_rush eco builders reach ore and place harvesters by round 10-15. With only 3 builders and 2 trying to do early barriers, we may not get our first harvester until round 20-30.
+**Fix**: Restored `explore_reserve = 30 if core_dist_sq > 50 else 5`.
 
-### 2. Early Barrier Logic Diverts All Early Builders
+## Additional Fix: Earlier Gunner on Tight Maps
 
-```python
-early_barrier_ok = (
-    (map_mode == "tight" and rnd >= 5 and (self.my_id or 0) % 5 != 0)
-    or self.harvesters_built >= 1
-)
-```
+While investigating, we also changed gunner timing:
+- **Before**: `gunner_round = 60 if map_mode == "tight"`
+- **After**: `gunner_round = 30 if map_mode == "tight"`
 
-On tight maps starting at round 5, builders with `id % 5 != 0` (i.e., builders 1, 2, 3, 4 — ALL of our first 3 non-zero-id builders) try to place barriers BEFORE seeking ore. With only 3 builders:
-- Builder 0: May have `id % 5 == 0` → skips barriers, goes to ore ✓
-- Builders 1, 2: Both try barriers first → delayed ore mission ✗
+Rush builders arrive by round 20-30. A gunner at round 30 (instead of 60) can start firing before rushers establish themselves in our base. This contributes to defense.
 
-This means 2/3 of our builders are barrier-hunting while ladder_rush's 2 eco builders go straight to harvesters.
+## Current State
 
-### 3. Ti Reserve Too Cautious at Spawn
+After fixes, performance on arena:
+- buzzing mines 14670 vs ladder_rush 14530 (buzzing wins by mined tiebreaker)
+- Consistent across all seeds (results are identical — arena is deterministic with symmetric positions)
 
-```python
-if ti < cost + 5:
-    return
-```
+Performance on other maps (vs ladder_rush seed 1):
+- default_medium1: **buzzing wins** (350 vs 0 mined)
+- galaxy: **buzzing wins** (9950 vs 4980 mined) 
+- cold: **buzzing wins** (1650 vs 0 mined)
+- corridors: **buzzing wins** (14790 vs 14620 mined)
+- face: **ladder_rush wins** (2560 vs 4970 mined) — next target
+- settlement: **buzzing wins** by huge margin
 
-vs ladder_rush:
-```python
-if ti < cost + 2:
-    return
-```
+## face Map: Next Target
 
-3 Ti difference, but it delays builder spawning by 1-2 rounds per builder. Across 5 builders, that's 5-10 rounds of delay in early game.
+Face is another tight/rush map (path=9). We lose 2560 vs 4970 mined. Same defense problem as arena was. Now that arena is fixed, face should be analyzed similarly.
 
-## What ladder_rush Does Right
+## Key Lesson
 
-1. **5 builders by round 15** — fast ramp
-2. **3 rush + 2 eco split** — eco builders go straight to ore, no barrier diversion
-3. **Low Ti reserve**: `cost + 2` — spawn the moment you can afford it
-4. **Low conveyor reserve**: `cc + 2` — build conveyors aggressively
-
-## Proposed Minimal Fixes
-
-### Fix 1: Raise tight map early builder cap (HIGH IMPACT)
-
-```python
-# Before:
-cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
-
-# After:
-cap = 5 if rnd <= 20 else (8 if rnd <= 100 else 15)
-```
-
-This matches ladder_rush's ramp. 5 builders by round 20 on tight maps.
-
-### Fix 2: Don't divert early builders to barriers before first harvester (HIGH IMPACT)
-
-```python
-# Before:
-early_barrier_ok = (
-    (map_mode == "tight" and rnd >= 5 and (self.my_id or 0) % 5 != 0)
-    or self.harvesters_built >= 1
-)
-
-# After:
-early_barrier_ok = self.harvesters_built >= 1
-```
-
-This ensures ALL early builders go straight to ore. Barriers wait until someone has a harvester running. One builder having `harvesters_built >= 1` means the barrier logic activates for that builder only — not all 3 initially.
-
-### Fix 3: Lower builder spawn Ti reserve (LOW-MEDIUM IMPACT)
-
-```python
-# Before:
-if ti < cost + 5:
-    return
-
-# After:
-if ti < cost + 2:
-    return
-```
-
-Matches ladder_rush's spawn aggression.
-
-## Expected Impact
-
-- Fix 1 alone: +2 extra builders by round 20 → potentially 2 more harvesters by round 30-40 → ~5-6x more mining over 2000 rounds
-- Fix 2 alone: Prevents builder delay in early rounds
-- Together: Should close most of the 15x mining gap
-
-## Risk Assessment
-
-- Fix 1: Could increase builder costs faster (cost scaling). But arena has 10 ore tiles — we NEED more harvesters to cover them.
-- Fix 2: Fewer early barriers = more rush vulnerability. But ladder_rush wins via economy, not rush kill. The gunners at round 60 should still deter rushers.
-- Fix 3: Minimal risk, small benefit.
-
-## Gunner Ammo Status
-
-Gunners check `ammo >= 2` before firing. Ti stacks flow through conveyors to the gunner. On tight maps, the conveyor chains are short (path=8), so ammo should flow. However, if the gunner builder (id%5==1) builds the gunner facing enemy but no conveyor feeds it Ti, it never fires.
-
-The `_place_gunner` function places a gunner near core facing enemy but does NOT build a dedicated ammo conveyor. It relies on existing conveyor chains passing through the gunner position. This could be an issue if the gunner is placed off the main resource chain.
-
-**However**, this is likely a secondary issue. The primary problem is that we're barely building harvesters at all, so resource flow is negligible regardless.
-
-## Recommended Implementation Order
-
-1. Fix 1 (builder cap) — highest impact, lowest risk
-2. Fix 2 (barrier timing) — high impact, slightly riskier on pure rush maps
-3. Test: `cambc run buzzing ladder_rush arena --seed 1`
-4. If still losing badly, add Fix 3 (spawn reserve)
+**Do not let exploration conveyor reduction optimizations break navigation**. The original `explore_reserve = 30` was calibrated carefully — at 30+ Ti, builder builds exploration conveyors; below 30, it just moves on existing passable tiles (core tiles). The 200 value was too high and broke builder mobility.

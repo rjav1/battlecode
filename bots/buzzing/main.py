@@ -1,4 +1,7 @@
-"""v39: Late-game Ax tiebreaker — one builder builds Ax harvester+foundry at round 1800+.
+"""v42: Bridge-first harvester delivery — chain-join > core bridge for ALL harvesters.
+Ax tiebreaker stuck detection (give up after 5 rounds stuck).
+
+v39: Late-game Ax tiebreaker — one builder builds Ax harvester+foundry at round 1800+.
 
 v37: Armed sentinel + attacker infra targeting + bridge shortcut.
 - Splitter+branch+sentinel ammo at round 1000+ for late-game area denial.
@@ -284,18 +287,46 @@ class Player:
             else:
                 self._early_barriers = True
 
-        # Bridge shortcut: one turn after building a harvester, try to bridge directly to core
+        # Bridge shortcut: after building harvester, bridge to nearest infra or core
+        # Priority: chain-join (nearest allied conveyor/bridge closer to core) > core tile
         if (self._bridge_target and self.core_pos
                 and c.get_action_cooldown() == 0):
             ore = self._bridge_target
-            if 9 < ore.distance_squared(self.core_pos) <= 36:
-                ti = c.get_global_resources()[0]
-                bc = c.get_bridge_cost()[0]
-                if ti >= bc + 5:
+            built = False
+            ti = c.get_global_resources()[0]
+            bc = c.get_bridge_cost()[0]
+            if ti >= bc + 5 and ore.distance_squared(self.core_pos) > 9:
+                # First: bridge to nearest allied chain tile closer to core
+                my_team = c.get_team()
+                best_chain = None
+                best_chain_dist = 10**9
+                for eid in c.get_nearby_buildings():
+                    try:
+                        if (c.get_entity_type(eid) in (EntityType.CONVEYOR, EntityType.SPLITTER, EntityType.BRIDGE)
+                                and c.get_team(eid) == my_team):
+                            epos = c.get_position(eid)
+                            if epos.distance_squared(self.core_pos) < ore.distance_squared(self.core_pos):
+                                d = ore.distance_squared(epos)
+                                if d < best_chain_dist:
+                                    best_chain = epos
+                                    best_chain_dist = d
+                    except Exception:
+                        pass
+                if best_chain:
+                    for bd in DIRS:
+                        bp = ore.add(bd)
+                        try:
+                            if c.can_build_bridge(bp, best_chain):
+                                c.build_bridge(bp, best_chain)
+                                built = True
+                                break
+                        except Exception:
+                            pass
+                # Fallback: bridge to core tile
+                if not built:
                     cx, cy = self.core_pos.x, self.core_pos.y
                     core_tiles = [Position(cx + dx, cy + dy)
                                   for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
-                    built = False
                     for ct in sorted(core_tiles, key=lambda t: ore.distance_squared(t)):
                         for bd in DIRS:
                             bp = ore.add(bd)
@@ -308,49 +339,9 @@ class Player:
                                 pass
                         if built:
                             break
-                        if pos.distance_squared(ore) <= 2:
-                            try:
-                                if c.can_build_bridge(pos, ct):
-                                    c.build_bridge(pos, ct)
-                                    built = True
-                                    break
-                            except Exception:
-                                pass
-                        if built:
-                            break
-                    # Chain-join bridge: connect to nearest allied chain tile
-                    if not built and self.core_pos:
-                        my_team = c.get_team()
-                        best_chain = None
-                        best_chain_dist = 10**9
-                        for eid in c.get_nearby_buildings():
-                            try:
-                                if (c.get_entity_type(eid) in (EntityType.CONVEYOR, EntityType.SPLITTER)
-                                        and c.get_team(eid) == my_team):
-                                    epos = c.get_position(eid)
-                                    # Chain tile must be closer to core than the harvester
-                                    if (epos.distance_squared(self.core_pos) < ore.distance_squared(self.core_pos)):
-                                        d = ore.distance_squared(epos)
-                                        if d < best_chain_dist:
-                                            best_chain = epos
-                                            best_chain_dist = d
-                            except Exception:
-                                pass
-                        if best_chain and best_chain_dist <= 36:  # chain tile within 6 tiles
-                            for bd in DIRS:
-                                bp = ore.add(bd)
-                                try:
-                                    if c.can_build_bridge(bp, best_chain):
-                                        c.build_bridge(bp, best_chain)
-                                        built = True
-                                        break
-                                except Exception:
-                                    pass
-                    self._bridge_target = None
-                    if built:
-                        return
-            else:
-                self._bridge_target = None
+            self._bridge_target = None
+            if built:
+                return
 
         # Attacker assignment: after round 500, 4+ harvesters, id%6==5
         if (not self.is_attacker and rnd > 500
@@ -363,7 +354,7 @@ class Player:
 
         # Gunner builder: id%5==1, timing varies by map mode
         map_mode = getattr(self, 'map_mode', 'balanced')
-        gunner_round = 60 if map_mode == "tight" else (120 if map_mode == "balanced" else 150)
+        gunner_round = 30 if map_mode == "tight" else (120 if map_mode == "balanced" else 150)
         harv_req = 1 if map_mode == "tight" else 3
         if ((self.my_id or 0) % 5 == 1 and rnd > gunner_round
                 and self.harvesters_built >= harv_req and self.core_pos
@@ -389,21 +380,6 @@ class Player:
                 and (self.my_id or 0) % 6 == 2
                 and not hasattr(self, '_ax_done')
                 and self.core_pos):
-            import sys
-            ax_step = getattr(self, '_ax_step', 'N/A')
-            # Debug: report all Ax ore tiles in vision
-            ax_info = []
-            for t in c.get_nearby_tiles():
-                if c.get_tile_env(t) == Environment.ORE_AXIONITE:
-                    bid = c.get_tile_building_id(t)
-                    btype = None
-                    if bid is not None:
-                        try:
-                            btype = c.get_entity_type(bid).name
-                        except Exception:
-                            btype = "?"
-                    ax_info.append(f"{t}:bid={bid}:{btype}")
-            print(f"[AX] r{rnd} id={self.my_id} pos={pos} step={ax_step} ax_tiles={ax_info}", file=sys.stderr)
             if self._build_ax_tiebreaker(c, pos):
                 return
 
@@ -799,47 +775,45 @@ class Player:
 
     # -------------------------------------------------------- Ax tiebreaker
     def _build_ax_tiebreaker(self, c, pos):
-        """Late-game foundry splice for TB#1 insurance.
+        """Late-game foundry for TB#1 insurance.
 
-        Ax ore tiles already have harvesters. We find a conveyor on the chain
-        between an Ax harvester and core (close to core where Ti also flows),
-        destroy it, and build a foundry inline. The foundry accepts/outputs from
-        ANY side, so the chain continues through it automatically.
+        Find Ax ore in vision. Build harvester + foundry + output conveyor
+        as a self-contained mini-chain. The foundry sits between the Ax harvester
+        and the existing conveyor network, receiving raw Ax from one side and
+        Ti from an adjacent conveyor on the other side.
 
-        Steps:
-        0: Find Ax harvester, then find best conveyor on its chain to replace
-        1: Walk to target conveyor
-        2: Destroy conveyor + build foundry (done)
+        Steps: 0=find Ax ore + plan, 1=walk to ore, 2=clear+build harvester,
+               3=build foundry adjacent, 4=build output conveyor, done
         """
+
         if not hasattr(self, '_ax_step'):
             self._ax_step = 0
+            self._ax_ore_pos = None
             self._ax_foundry_pos = None
+            self._ax_foundry_dir = None  # direction from ore to foundry
 
         if self._ax_step == 0:
             my_team = c.get_team()
-            # Skip if an allied foundry already exists (another builder built one)
-            import sys as _sys
+            # Skip if allied foundry exists
             for eid in c.get_nearby_buildings():
                 try:
                     if (c.get_entity_type(eid) == EntityType.FOUNDRY
                             and c.get_team(eid) == my_team):
-                        print(f"[AX] SKIP: foundry {eid} at {c.get_position(eid)}", file=_sys.stderr)
                         self._ax_done = True
                         return False
                 except Exception:
                     pass
-            # Find allied harvesters on ORE_AXIONITE
-            ax_harvs = []
-            for eid in c.get_nearby_buildings():
-                try:
-                    if (c.get_entity_type(eid) == EntityType.HARVESTER
-                            and c.get_team(eid) == my_team):
-                        hpos = c.get_position(eid)
-                        if c.get_tile_env(hpos) == Environment.ORE_AXIONITE:
-                            ax_harvs.append(hpos)
-                except Exception:
-                    pass
-            if not ax_harvs:
+            # Find Ax ore tile (with or without buildings on it)
+            best_ax = None
+            best_dist = 10**9
+            for t in c.get_nearby_tiles():
+                if c.get_tile_env(t) == Environment.ORE_AXIONITE:
+                    d = pos.distance_squared(t)
+                    if d < best_dist:
+                        best_dist = d
+                        best_ax = t
+            if best_ax is None:
+                # Walk toward core to find Ax ore
                 if not hasattr(self, '_ax_search_rounds'):
                     self._ax_search_rounds = 0
                 self._ax_search_rounds += 1
@@ -848,88 +822,173 @@ class Player:
                     return False
                 self._walk_to(c, pos, self.core_pos)
                 return True
-
-            # Find a conveyor close to core to replace with foundry.
-            # Near core, chains merge so the foundry gets both Ti + Ax stacks.
-            # Must be within 8 r^2 of core (action range) to ensure it's on a
-            # merged chain section, AND within 20 r^2 of an Ax harvester to
-            # ensure Ax reaches it.
-            best_conv = None
-            best_score = 10**9
-            for eid in c.get_nearby_buildings():
+            self._ax_ore_pos = best_ax
+            # Plan foundry: prefer spot adjacent to ore AND near Ti conveyors
+            my_team = c.get_team()
+            best_fp = None
+            best_fp_score = -1
+            for fd in DIRS:
+                fp = best_ax.add(fd)
                 try:
-                    if c.get_team(eid) != my_team:
+                    if not c.is_in_vision(fp):
                         continue
-                    if c.get_entity_type(eid) != EntityType.CONVEYOR:
+                    if c.get_tile_env(fp) == Environment.WALL:
                         continue
-                    cpos = c.get_position(eid)
-                    core_dist = cpos.distance_squared(self.core_pos)
-                    if core_dist > 8:  # must be very close to core
-                        continue
-                    # Must be reachable from an Ax harvester chain
-                    near_ax = any(cpos.distance_squared(h) <= 20 for h in ax_harvs)
-                    if near_ax and core_dist < best_score:
-                        best_score = core_dist
-                        best_conv = cpos
-                except Exception:
-                    pass
-            if best_conv is None:
-                print(f"[AX] No conv near core (r^2<=8), trying adjacent to harvester", file=_sys.stderr)
-                # Fallback: try adjacent to Ax harvester
-                for hpos in ax_harvs:
-                    for d in DIRS:
-                        cp = hpos.add(d)
+                    adj_convs = 0
+                    for d2 in DIRS:
+                        adj2 = fp.add(d2)
+                        if adj2 == best_ax:
+                            continue
                         try:
-                            if not c.is_in_vision(cp):
-                                continue
-                            bid = c.get_tile_building_id(cp)
-                            if bid is None or c.get_team(bid) != my_team:
-                                continue
-                            if c.get_entity_type(bid) == EntityType.CONVEYOR:
-                                cdist = cp.distance_squared(self.core_pos)
-                                if cdist < best_score:
-                                    best_score = cdist
-                                    best_conv = cp
+                            bid2 = c.get_tile_building_id(adj2)
+                            if bid2 is not None and c.get_team(bid2) == my_team:
+                                if c.get_entity_type(bid2) in (EntityType.CONVEYOR, EntityType.SPLITTER):
+                                    adj_convs += 1
                         except Exception:
                             pass
-            if best_conv is None:
+                    core_dist = fp.distance_squared(self.core_pos) if self.core_pos else 0
+                    score = adj_convs * 1000 - core_dist
+                    if score > best_fp_score:
+                        best_fp_score = score
+                        best_fp = fp
+                except Exception:
+                    pass
+            if best_fp is None:
                 self._ax_done = True
                 return False
-            self._ax_foundry_pos = best_conv
+            self._ax_foundry_dir = best_ax.direction_to(best_fp)
+            self._ax_foundry_pos = best_fp
             self._ax_step = 1
+
             return True
 
         if self._ax_step == 1:
-            if pos.distance_squared(self._ax_foundry_pos) > 2:
-                self._walk_to(c, pos, self._ax_foundry_pos)
+            # Walk to Ax ore tile
+            if pos.distance_squared(self._ax_ore_pos) > 2:
+                self._walk_to(c, pos, self._ax_ore_pos)
                 return True
             self._ax_step = 2
 
         if self._ax_step == 2:
+            # Clear ore tile and build harvester
+            if c.get_action_cooldown() != 0:
+                return True
+            if pos.distance_squared(self._ax_ore_pos) > 2:
+                self._walk_to(c, pos, self._ax_ore_pos)
+                return True
+            # Check if harvester already exists on this tile
+            bid = c.get_tile_building_id(self._ax_ore_pos)
+            if bid is not None:
+                try:
+                    if (c.get_entity_type(bid) == EntityType.HARVESTER
+                            and c.get_team(bid) == c.get_team()):
+                        # Already has our harvester — skip to foundry
+                        self._ax_step = 3
+                        return True
+                    # Something else — destroy it
+                    if c.get_team(bid) == c.get_team():
+                        if c.can_destroy(self._ax_ore_pos):
+                            c.destroy(self._ax_ore_pos)
+                    else:
+                        self._ax_done = True
+                        return False
+                except Exception:
+                    self._ax_done = True
+                    return False
+            ti = c.get_global_resources()[0]
+            hc = c.get_harvester_cost()[0]
+            if ti < hc + 50:
+                return True
+            if c.can_build_harvester(self._ax_ore_pos):
+                c.build_harvester(self._ax_ore_pos)
+
+                self._ax_step = 3
+            else:
+                self._ax_done = True
+            return True
+
+        if self._ax_step == 3:
+            # Build foundry adjacent to harvester (toward core)
             if c.get_action_cooldown() != 0:
                 return True
             ti = c.get_global_resources()[0]
             fc = c.get_foundry_cost()[0]
             if ti < fc + 5:
                 return True
-            if pos.distance_squared(self._ax_foundry_pos) > 2:
-                self._walk_to(c, pos, self._ax_foundry_pos)
+            fp = self._ax_foundry_pos
+            if pos.distance_squared(fp) > 2:
+                self._walk_to(c, pos, fp)
                 return True
-            try:
-                import sys
-                if c.can_destroy(self._ax_foundry_pos):
-                    c.destroy(self._ax_foundry_pos)
-                    print(f"[AX] DESTROYED conveyor at {self._ax_foundry_pos}", file=sys.stderr)
-                if c.can_build_foundry(self._ax_foundry_pos):
-                    c.build_foundry(self._ax_foundry_pos)
-                    print(f"[AX] BUILT FOUNDRY at {self._ax_foundry_pos}!", file=sys.stderr)
-                    self._ax_done = True
+            # Clear the tile if needed
+            bid = c.get_tile_building_id(fp)
+            if bid is not None:
+                try:
+                    if c.get_team(bid) == c.get_team() and c.can_destroy(fp):
+                        c.destroy(fp)
+                except Exception:
+                    pass
+            if c.can_build_foundry(fp):
+                c.build_foundry(fp)
+
+                self._ax_step = 4
+            else:
+                # Try alternative positions around the ore
+                for d in DIRS:
+                    alt = self._ax_ore_pos.add(d)
+                    if alt == fp:
+                        continue
+                    try:
+                        if pos.distance_squared(alt) > 2:
+                            continue
+                        abid = c.get_tile_building_id(alt)
+                        if abid is not None and c.get_team(abid) == c.get_team():
+                            if c.can_destroy(alt):
+                                c.destroy(alt)
+                        if c.can_build_foundry(alt):
+                            c.build_foundry(alt)
+                            self._ax_foundry_pos = alt
+
+                            self._ax_step = 4
+                            break
+                    except Exception:
+                        pass
                 else:
-                    print(f"[AX] CANNOT build foundry at {self._ax_foundry_pos}", file=sys.stderr)
-                    self._ax_done = True
-            except Exception as e:
-                print(f"[AX] EXCEPTION in step 2: {e}", file=sys.stderr)
+                    self._walk_to(c, pos, self._ax_ore_pos)
+                    if not hasattr(self, '_ax_step3_tries'):
+                        self._ax_step3_tries = 0
+                    self._ax_step3_tries += 1
+                    if self._ax_step3_tries > 20:
+                        self._ax_done = True
+            return True
+
+        if self._ax_step == 4:
+            # Build output conveyor from foundry toward core/existing chain
+            if c.get_action_cooldown() != 0:
+                return True
+            ti = c.get_global_resources()[0]
+            cc = c.get_conveyor_cost()[0]
+            if ti < cc + 5:
                 self._ax_done = True
+                return True
+            fp = self._ax_foundry_pos
+            out_dir = fp.direction_to(self.core_pos)
+            if out_dir == Direction.CENTRE:
+                out_dir = self._ax_foundry_dir
+            for d in [out_dir, out_dir.rotate_left(), out_dir.rotate_right(),
+                      out_dir.rotate_left().rotate_left(), out_dir.rotate_right().rotate_right()]:
+                out_pos = fp.add(d)
+                try:
+                    if pos.distance_squared(out_pos) > 2:
+                        continue
+                    if c.can_build_conveyor(out_pos, d):
+                        c.build_conveyor(out_pos, d)
+
+                        self._ax_done = True
+                        return True
+                except Exception:
+                    pass
+            # Can't build output — foundry is still there, maybe it'll connect
+            self._ax_done = True
             return True
 
         return False
@@ -1218,7 +1277,9 @@ class Player:
         queue = deque([(pos, None)])
         visited = {pos}
         best_dir, best_dist = None, pos.distance_squared(target)
-        while queue:
+        steps = 0
+        while queue and steps < 200:
+            steps += 1
             cur, fd = queue.popleft()
             for d in DIRS:
                 nxt = cur.add(d)
