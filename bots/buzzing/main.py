@@ -1,9 +1,9 @@
-"""v15: Chain-fix for winding conveyor paths.
+"""v16: Fix shish_kebab exploration + early barriers for anti-rush.
 
 d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
 gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
-NEW: After placing first 2 harvesters, if outbound path was winding (3+ direction
-changes), walk back along recorded path fixing conveyor directions behind us.
+Chain-fix for winding paths. NEW: Extended explore range on tight maps (area<=625),
+early barrier placement after first harvester to slow rushes.
 """
 
 from collections import deque
@@ -133,6 +133,7 @@ class Player:
         else:
             self.stuck = 0
         self.last_pos = pos
+        map_mode = getattr(self, 'map_mode', 'balanced')
         if self.stuck > 12:
             self.target = None
             self.stuck = 0
@@ -150,6 +151,46 @@ class Player:
 
         rnd = c.get_current_round()
 
+        # Early barrier anti-rush: builder with 1+ harvester places 2 barriers near core
+        if (rnd <= 30 and self.core_pos
+                and self.harvesters_built >= 1
+                and not hasattr(self, '_early_barriers')
+                and c.get_action_cooldown() == 0
+                and pos.distance_squared(self.core_pos) <= 18):
+            if not hasattr(self, '_early_barrier_count'):
+                self._early_barrier_count = 0
+            if self._early_barrier_count < 2:
+                ti = c.get_global_resources()[0]
+                bc = c.get_barrier_cost()[0]
+                if ti >= bc + 20:
+                    enemy_dir = self._get_enemy_direction(c)
+                    if enemy_dir:
+                        edx, edy = enemy_dir.delta()
+                        perp_l = enemy_dir.rotate_left().rotate_left()
+                        perp_r = enemy_dir.rotate_right().rotate_right()
+                        candidates = []
+                        for dist in (2, 3):
+                            cx = self.core_pos.x + edx * dist
+                            cy = self.core_pos.y + edy * dist
+                            center = Position(cx, cy)
+                            candidates.append(center)
+                            for pd in (perp_l, perp_r):
+                                pdx, pdy = pd.delta()
+                                candidates.append(Position(cx + pdx, cy + pdy))
+                        for bp in candidates:
+                            if pos.distance_squared(bp) <= 2:
+                                try:
+                                    if c.can_build_barrier(bp):
+                                        c.build_barrier(bp)
+                                        self._early_barrier_count += 1
+                                        if self._early_barrier_count >= 2:
+                                            self._early_barriers = True
+                                        return
+                                except Exception:
+                                    pass
+            else:
+                self._early_barriers = True
+
         # Attacker assignment: after round 500, 4+ harvesters, id%6==5
         if (not self.is_attacker and rnd > 500
                 and self.harvesters_built >= 4
@@ -159,16 +200,19 @@ class Player:
             self._attack(c, pos, passable)
             return
 
-        # Gunner builder: id%5==1, after round 200, 3+ harvesters
-        if ((self.my_id or 0) % 5 == 1 and rnd > 200
+        # Gunner builder: id%5==1, after round 200, 3+ harvesters (skip on tight maps)
+        map_mode = getattr(self, 'map_mode', 'balanced')
+        if (map_mode != "tight"
+                and (self.my_id or 0) % 5 == 1 and rnd > 200
                 and self.harvesters_built >= 3 and self.core_pos
                 and self.sent_step < 6
                 and c.get_global_resources()[0] >= 80):
             if self._build_sentinel_infra(c, pos):
                 return
 
-        # Barrier placement near core
-        if (rnd >= 80 and self.core_pos
+        # Barrier placement near core (skip on tight maps — resources too scarce)
+        if (map_mode != "tight"
+                and rnd >= 80 and self.core_pos
                 and pos.distance_squared(self.core_pos) <= 20
                 and c.get_action_cooldown() == 0
                 and c.get_global_resources()[0] >= 50):
@@ -267,7 +311,7 @@ class Player:
         if c.get_action_cooldown() == 0:
             ti = c.get_global_resources()[0]
             bc = c.get_bridge_cost()[0]
-            # Tight maps: be very aggressive; other maps: still low threshold
+            # Tight maps: slightly more aggressive; other maps: standard threshold
             map_mode = getattr(self, 'map_mode', 'balanced')
             bridge_threshold = bc + 10 if map_mode == "tight" else bc + 20
             if ti >= bridge_threshold:
@@ -301,7 +345,9 @@ class Player:
                + c.get_current_round() // 100) % len(DIRS)
         d = DIRS[idx]
         dx, dy = d.delta()
-        far = Position(pos.x + dx * 15, pos.y + dy * 15)
+        w, h = c.get_map_width(), c.get_map_height()
+        reach = max(w, h) if w * h <= 625 else 15
+        far = Position(pos.x + dx * reach, pos.y + dy * reach)
         self._nav(c, pos, far, passable)
 
     # -------------------------------------------------------- Sentinel infra
