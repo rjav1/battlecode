@@ -1,4 +1,6 @@
-"""v23: Sector-based exploration on large maps — builders spread to map edges from core for better ore access.
+"""v24: Extend sector-based exploration to balanced maps — cold/corridors improvement.
+
+v23: Sector-based exploration on large maps — builders spread to map edges from core for better ore access.
 
 v22: Wall-density-adaptive ore scoring — maze maps use nearest-to-builder, open maps use core-proximate.
 
@@ -388,13 +390,26 @@ class Player:
             tx = max(0, min(w - 1, cx + dx * reach))
             ty = max(0, min(h - 1, cy + dy * reach))
             far = Position(tx, ty)
+        elif area > 625:
+            # Balanced maps: sector from core, mid*3 spread, quick rotation
+            sector = (mid * 3 + self.explore_idx + rnd // 50) % len(DIRS)
+            d = DIRS[sector]
+            dx, dy = d.delta()
+            if self.core_pos:
+                cx, cy = self.core_pos.x, self.core_pos.y
+            else:
+                cx, cy = pos.x, pos.y
+            reach = max(w, h)
+            tx = max(0, min(w - 1, cx + dx * reach))
+            ty = max(0, min(h - 1, cy + dy * reach))
+            far = Position(tx, ty)
         else:
-            # Small/medium maps: original spread pattern from builder position
+            # Tight maps (area <= 625): original spread pattern from builder position
             idx = (mid * 3 + self.explore_idx
                    + rnd // 100) % len(DIRS)
             d = DIRS[idx]
             dx, dy = d.delta()
-            reach = max(w, h) if area <= 625 else 15
+            reach = max(w, h)
             far = Position(pos.x + dx * reach, pos.y + dy * reach)
         self._nav(c, pos, far, passable)
 
