@@ -13,13 +13,14 @@
 - PhD/quant rigor. Measure everything. No assumptions.
 
 ## CURRENT STATE:
-- Bot: v38, ~1104 lines, Version 40 on ladder
-- Elo: ~1480 (was 1488, dropped pre-fix, now climbing — post-fix 5W-1L = 83%)
-- Ladder record: ~80 matches, climbing with new fixes
-- Local win rate: settlement +325%, default_medium1 +90%, cold minor regression
+- Bot: v43, ~1360 lines, Version 45 on ladder
+- Elo: volatile but climbing — V45 is 3W-0L (best streak)
+- Local baseline: 50% (was 44% pre-session). Rusher 75% (was 25%), sentinel_spam 75% (was 20%)
+- Beat The Defect 4-1 (nemesis, was 0-3 lifetime!)
+- Sprint 4 deadline: April 11
 
 ## WHAT'S LIVE ON LADDER:
-- v38 as Version 40: all v36+v37 features + high-bank spending (expand-only) + dynamic barriers
+- v43 as Version 45: conservative caps + defense improvements + armed sentinel + attacker infra + bridge
 - GitHub: github.com/rjav1/battlecode — fully pushed
 
 ## WHAT JUST HAPPENED (this session):
