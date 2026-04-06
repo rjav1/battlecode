@@ -1,8 +1,8 @@
 # Regression Test Results
 
-**Date:** 2026-04-06 17:33:16
+**Date:** 2026-04-06 18:12:31
 **Bot:** buzzing
-**Duration:** 48s
+**Duration:** 59s
 **Verdict:** PASS
 
 ## Summary
@@ -19,9 +19,9 @@
 |-----|--------|-----------|-------|--------|----------|--------|----------|
 | default_medium1 | LOSS | resources | 2000 | 4960 | 9760 | 0 | 0 |
 | cold | LOSS | resources | 2000 | 19670 | 19700 | 0 | 0 |
-| face | WIN | resources | 2000 | 18590 | 9910 | 0 | 0 |
-| settlement | WIN | resources | 2000 | 37390 | 9760 | 0 | 0 |
-| galaxy | WIN | resources | 2000 | 13670 | 9940 | 0 | 0 |
+| face | WIN | resources | 2000 | 18600 | 9910 | 0 | 0 |
+| settlement | WIN | resources | 2000 | 37390 | 7620 | 0 | 0 |
+| galaxy | WIN | resources | 2000 | 13660 | 9940 | 0 | 0 |
 
 ## Self-Play Stability
 
