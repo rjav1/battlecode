@@ -1,7 +1,9 @@
-"""v37: Armed sentinel — splice splitter+branch+sentinel off existing conveyor chain
-at round 1000+ for late-game area denial. Stateful multi-round build process.
+"""v37: Armed sentinel + attacker infra targeting + bridge shortcut.
+- Splitter+branch+sentinel ammo at round 1000+ for late-game area denial.
+- Attacker targets enemy conveyors/harvesters instead of core (500HP).
+- Bridge shortcut for harvesters 3-5 tiles from core — direct resource delivery.
 
-v36: Fix econ_cap ceiling — expand time_floor to 20, balanced to 15, tight to 12. Expand builder cap 12->20. Fixes galaxy 10-unit cap that caused 0-8 ladder record.
+v36: Fix econ_cap ceiling — expand=15, balanced=12, tight=10. Expand cap 16.
 Also enables gunners on tight maps (round 60) — was completely blocked before.
 
 v34: Raise tight builder cap 7->15 for arena ore coverage.
@@ -59,6 +61,7 @@ class Player:
         self._sentinel_chain_dir = None  # facing direction of that conveyor
         self._sentinel_branch_dir = None # perpendicular direction for branch
         self._sentinel_positions = {}    # planned positions: splitter, branch, sentinel
+        self._bridge_target = None       # ore tile needing a bridge shortcut next round
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -279,6 +282,46 @@ class Player:
             else:
                 self._early_barriers = True
 
+        # Bridge shortcut: one turn after building a harvester, try to bridge directly to core
+        if (self._bridge_target and self.core_pos
+                and c.get_action_cooldown() == 0):
+            ore = self._bridge_target
+            if 9 < ore.distance_squared(self.core_pos) <= 25:
+                ti = c.get_global_resources()[0]
+                bc = c.get_bridge_cost()[0]
+                if ti >= bc + 5:
+                    cx, cy = self.core_pos.x, self.core_pos.y
+                    core_tiles = [Position(cx + dx, cy + dy)
+                                  for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
+                    built = False
+                    for ct in sorted(core_tiles, key=lambda t: ore.distance_squared(t)):
+                        for bd in DIRS:
+                            bp = ore.add(bd)
+                            try:
+                                if c.can_build_bridge(bp, ct):
+                                    c.build_bridge(bp, ct)
+                                    built = True
+                                    break
+                            except Exception:
+                                pass
+                        if built:
+                            break
+                        if pos.distance_squared(ore) <= 2:
+                            try:
+                                if c.can_build_bridge(pos, ct):
+                                    c.build_bridge(pos, ct)
+                                    built = True
+                                    break
+                            except Exception:
+                                pass
+                        if built:
+                            break
+                    self._bridge_target = None
+                    if built:
+                        return
+            else:
+                self._bridge_target = None
+
         # Attacker assignment: after round 500, 4+ harvesters, id%6==5
         if (not self.is_attacker and rnd > 500
                 and self.harvesters_built >= 4
@@ -334,6 +377,7 @@ class Player:
                     self.target = None
                     self._claimed_pos = None
                     self._marker_placed = False
+                    self._bridge_target = ore  # attempt bridge shortcut next round
                     # Chain-fix for first 2 harvesters if path is winding
                     if (self.core_pos and len(self.fix_path) >= 4
                             and self.harvesters_built <= 2):
@@ -757,17 +801,20 @@ class Player:
 
     # ------------------------------------------------------------ Attack
     def _attack(self, c, pos, passable):
+        """Attack enemy infrastructure. Priority: foundry > harvester > conveyor > other."""
+        # Phase 1: Fire on enemy building on current tile
         if c.get_action_cooldown() == 0:
             bid = c.get_tile_building_id(pos)
             if bid is not None:
                 try:
-                    if c.get_team(bid) != c.get_team():
-                        if c.can_fire(pos):
-                            c.fire(pos)
-                            return
+                    if c.get_team(bid) != c.get_team() and c.can_fire(pos):
+                        c.fire(pos)
+                        return
                 except Exception:
                     pass
-            # Move onto adjacent enemy buildings to attack them
+
+        # Phase 2: Move onto adjacent enemy conveyor (walkable!)
+        if c.get_move_cooldown() == 0:
             w, h = c.get_map_width(), c.get_map_height()
             for d in DIRS:
                 ap = pos.add(d)
@@ -776,17 +823,82 @@ class Player:
                 abid = c.get_tile_building_id(ap)
                 if abid is not None:
                     try:
-                        if c.get_team(abid) != c.get_team():
-                            if c.get_move_cooldown() == 0 and c.can_move(d):
-                                c.move(d)
-                                return
+                        if c.get_team(abid) != c.get_team() and c.can_move(d):
+                            c.move(d)
+                            return
                     except Exception:
                         pass
-        enemy_pos = self._get_enemy_core_pos(c)
-        if enemy_pos:
-            self._nav(c, pos, enemy_pos, passable)
+
+        # Phase 3: Find nearest enemy building in vision, navigate toward it
+        best_target = self._find_best_infra_target(c, pos)
+
+        if best_target:
+            self._nav_attacker(c, pos, best_target, passable, ti_reserve=30)
         else:
-            self._explore(c, pos, passable)
+            # No enemy infra visible — navigate toward enemy core area to find targets
+            enemy_pos = self._get_enemy_core_pos(c)
+            if enemy_pos:
+                self._nav_attacker(c, pos, enemy_pos, passable, ti_reserve=30)
+            else:
+                self._explore(c, pos, passable)
+
+    def _find_best_infra_target(self, c, pos):
+        """Scan nearby enemy buildings and return position of highest-priority target."""
+        PRIORITY = {
+            EntityType.FOUNDRY: 0,
+            EntityType.HARVESTER: 1,
+            EntityType.GUNNER: 2,
+            EntityType.SENTINEL: 3,
+            EntityType.BREACH: 4,
+            EntityType.SPLITTER: 5,
+            EntityType.CONVEYOR: 6,
+            EntityType.ARMOURED_CONVEYOR: 7,
+            EntityType.BARRIER: 8,
+        }
+        best = None
+        best_score = float('inf')
+        my_team = c.get_team()
+        for eid in c.get_nearby_buildings():
+            try:
+                if c.get_team(eid) == my_team:
+                    continue
+                etype = c.get_entity_type(eid)
+                if etype == EntityType.CORE:
+                    continue  # skip core, too much HP
+                epos = c.get_position(eid)
+                pri = PRIORITY.get(etype, 9)
+                dist = pos.distance_squared(epos)
+                score = pri * 1000 + dist
+                if score < best_score:
+                    best_score = score
+                    best = epos
+            except Exception:
+                pass
+        return best
+
+    def _nav_attacker(self, c, pos, target, passable, ti_reserve=20):
+        """Navigate toward target without building conveyors. Uses roads for movement."""
+        dirs = self._rank(pos, target)
+        bfs_dir = self._bfs_step(pos, target, passable)
+        if bfs_dir is not None and bfs_dir != dirs[0]:
+            dirs = [bfs_dir] + [d for d in dirs if d != bfs_dir]
+
+        w, h = c.get_map_width(), c.get_map_height()
+        for d in dirs:
+            nxt = pos.add(d)
+            if nxt.x < 0 or nxt.x >= w or nxt.y < 0 or nxt.y >= h:
+                continue
+            # Move if the tile is passable for builder bots
+            if c.get_move_cooldown() == 0 and c.can_move(d):
+                c.move(d)
+                return
+            # Build road as walkable path (cheaper than conveyor, doesn't misdirect resources)
+            if c.get_action_cooldown() == 0:
+                ti = c.get_global_resources()[0]
+                rc = c.get_road_cost()[0]
+                if ti >= rc + ti_reserve and c.can_build_road(nxt):
+                    c.build_road(nxt)
+                    return
 
     # --------------------------------------------------------- Chain fix
     def _fix_chain(self, c, pos):

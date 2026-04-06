@@ -19,8 +19,9 @@
 - Local win rate vs realistic opponents: 70% (was 33% before v32-v34 fixes, +37pp)
 
 ## WHAT'S LIVE ON LADDER:
-- v33 (submitting v36): sector exploration diversity + early barriers + econ_cap fix + tight gunners
-- GitHub: github.com/rjav1/battlecode — needs push after v36 deploy
+- v36 as Version 38: econ_cap fix + tight gunners + tight barriers (post-deploy: 4W-1L = 80%)
+- v37 ready locally: armed sentinel + attacker infra targeting + bridge shortcut
+- GitHub: github.com/rjav1/battlecode — pushed through v36
 
 ## WHAT JUST HAPPENED (this session):
 - v36: Fixed econ_cap ceiling (was max 10, now expand=20, balanced=15, tight=12)
