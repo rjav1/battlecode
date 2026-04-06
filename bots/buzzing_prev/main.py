@@ -1,4 +1,4 @@
-"""v16: Fix shish_kebab exploration + early barriers for anti-rush.
+"""v18: Fix econ_cap floor — large maps no longer starved at 4 builders.
 
 d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
 gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
@@ -77,7 +77,7 @@ class Player:
                     vis_harv += 1
             except Exception:
                 pass
-        econ_cap = vis_harv * 3 + 4
+        econ_cap = max(6, vis_harv * 3 + 4)
         cap = min(cap, econ_cap)
         if units >= cap:
             return
