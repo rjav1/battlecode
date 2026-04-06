@@ -13,15 +13,14 @@
 - PhD/quant rigor. Measure everything. No assumptions.
 
 ## CURRENT STATE:
-- Bot: v36, ~840 lines, deploying to ladder
-- Elo: ~1488, major fixes in v36 should push up significantly
-- Ladder record: 24W-30L across 54 matches (44%), but v34+ untested on ladder
-- Local win rate vs realistic opponents: 70% (was 33% before v32-v34 fixes, +37pp)
+- Bot: v38, ~1104 lines, Version 40 on ladder
+- Elo: ~1480 (was 1488, dropped pre-fix, now climbing — post-fix 5W-1L = 83%)
+- Ladder record: ~80 matches, climbing with new fixes
+- Local win rate: settlement +325%, default_medium1 +90%, cold minor regression
 
 ## WHAT'S LIVE ON LADDER:
-- v36 as Version 38: econ_cap fix + tight gunners + tight barriers (post-deploy: 4W-1L = 80%)
-- v37 ready locally: armed sentinel + attacker infra targeting + bridge shortcut
-- GitHub: github.com/rjav1/battlecode — pushed through v36
+- v38 as Version 40: all v36+v37 features + high-bank spending (expand-only) + dynamic barriers
+- GitHub: github.com/rjav1/battlecode — fully pushed
 
 ## WHAT JUST HAPPENED (this session):
 - v36: Fixed econ_cap ceiling (was max 10, now expand=20, balanced=15, tight=12)
