@@ -1,19 +1,17 @@
-"""v24: Extend sector-based exploration to balanced maps — cold/corridors improvement.
+"""v25: Reduce wasteful exploration conveyors + time-based builder ramp.
 
-v23: Sector-based exploration on large maps — builders spread to map edges from core for better ore access.
+Two changes:
+1. Distance-based explore Ti reserve: builders >7 tiles from core require 30 Ti
+   reserve before building conveyors during exploration (vs 5 default). Reduces
+   wasteful conveyor sprawl in areas unlikely to connect to core.
+2. Time-based econ_cap floor ramp: gradually allows more builders over time
+   (6 + rnd//200, capped at 10) even when harvesters are outside core vision.
 
-v22: Wall-density-adaptive ore scoring — maze maps use nearest-to-builder, open maps use core-proximate.
-
-v21: Simplify gunner placement — no chain destruction.
-
-v20: Prefer ore closer to core — shorter chains, faster delivery.
-
-v19: Harvest axionite ore tiles too — more harvesters, better tiebreakers.
-
-d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
-gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
-Chain-fix for winding paths. NEW: Extended explore range on tight maps (area<=625),
-early barrier placement after first harvester to slow rushes.
+v24: Extend sector-based exploration to balanced maps.
+v23: Sector-based exploration on large maps.
+v22: Wall-density-adaptive ore scoring.
+d.opposite() conveyors, BFS nav, builder scaling, bridge fallback,
+gunner placement, attacker raider, symmetry detection, barriers.
 """
 
 from collections import deque
@@ -82,7 +80,8 @@ class Player:
                     vis_harv += 1
             except Exception:
                 pass
-        econ_cap = max(6, vis_harv * 3 + 4)
+        time_floor = min(6 + rnd // 200, 10)
+        econ_cap = max(time_floor, vis_harv * 3 + 4)
         cap = min(cap, econ_cap)
         if units >= cap:
             return
@@ -299,10 +298,10 @@ class Player:
         if self.target:
             self._nav(c, pos, self.target, passable)
         else:
-            self._explore(c, pos, passable)
+            self._explore(c, pos, passable, rnd)
 
     # -------------------------------------------------------------- Nav
-    def _nav(self, c, pos, target, passable):
+    def _nav(self, c, pos, target, passable, ti_reserve=5):
         """Navigate toward target, building conveyors with d.opposite() facing."""
         dirs = self._rank(pos, target)
         bfs_dir = self._bfs_step(pos, target, passable)
@@ -317,7 +316,7 @@ class Player:
             if c.get_action_cooldown() == 0:
                 ti = c.get_global_resources()[0]
                 cc = c.get_conveyor_cost()[0]
-                if ti >= cc + 5:
+                if ti >= cc + ti_reserve:
                     face = d.opposite()
                     # Destroy allied road so we can place conveyor
                     bid = c.get_tile_building_id(nxt)
@@ -371,7 +370,7 @@ class Player:
                         c.build_road(rp)
                         return
 
-    def _explore(self, c, pos, passable):
+    def _explore(self, c, pos, passable, rnd=0):
         w, h = c.get_map_width(), c.get_map_height()
         rnd = c.get_current_round()
         mid = self.my_id or 0
@@ -411,7 +410,10 @@ class Player:
             dx, dy = d.delta()
             reach = max(w, h)
             far = Position(pos.x + dx * reach, pos.y + dy * reach)
-        self._nav(c, pos, far, passable)
+        # Higher Ti reserve for exploration when far from core (less useful conveyors)
+        core_dist_sq = pos.distance_squared(self.core_pos) if self.core_pos else 0
+        explore_reserve = 30 if core_dist_sq > 50 else 5
+        self._nav(c, pos, far, passable, ti_reserve=explore_reserve)
 
     # -------------------------------------------------------- Gunner placement
     def _place_gunner(self, c, pos):
