@@ -1,4 +1,6 @@
-"""v19: Harvest axionite ore tiles too — more harvesters, better tiebreakers.
+"""v20: Prefer ore closer to core — shorter chains, faster delivery.
+
+v19: Harvest axionite ore tiles too — more harvesters, better tiebreakers.
 
 d.opposite() conveyors, BFS nav, builder scaling, lower reserves, bridge fallback,
 gunner placement, attacker raider, symmetry detection, road-destroy fix, barriers.
@@ -251,13 +253,15 @@ class Player:
                         self.fix_path = []
                     return
 
-        # Pick nearest visible ore
+        # Pick ore: balance proximity to builder and proximity to core (short chains)
         if ore_tiles:
             best, bd = None, 10**9
             for t in ore_tiles:
-                d = pos.distance_squared(t)
-                if d < bd:
-                    best, bd = t, d
+                builder_dist = pos.distance_squared(t)
+                core_dist = t.distance_squared(self.core_pos) if self.core_pos else 0
+                score = builder_dist + core_dist * 2
+                if score < bd:
+                    best, bd = t, score
             if best != self.target:
                 self.fix_path = []
             self.target = best
