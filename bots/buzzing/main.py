@@ -1,4 +1,4 @@
-"""v32: Higher balanced builder cap + tight-map early barrier defense.
+"""v33: Stronger builder exploration diversity — cold ore coverage.
 
 Two targeted fixes for realistic opponents:
 
@@ -462,7 +462,8 @@ class Player:
 
         if area >= 1600:
             # Large maps: sector-based from core, target map edge, rotate slowly
-            sector = (mid + self.explore_idx + rnd // 200) % len(DIRS)
+            # Multiply ID by prime to spread sequential IDs across sectors
+            sector = (mid * 7 + self.explore_idx * 3 + rnd // 200) % len(DIRS)
             d = DIRS[sector]
             dx, dy = d.delta()
             if self.core_pos:
@@ -474,8 +475,8 @@ class Player:
             ty = max(0, min(h - 1, cy + dy * reach))
             far = Position(tx, ty)
         elif area > 625:
-            # Balanced maps: sector from core, mid*3 spread, quick rotation
-            sector = (mid * 3 + self.explore_idx + rnd // 50) % len(DIRS)
+            # Balanced maps: sector from core, prime-spread IDs, quick rotation
+            sector = (mid * 7 + self.explore_idx * 3 + rnd // 50) % len(DIRS)
             d = DIRS[sector]
             dx, dy = d.delta()
             if self.core_pos:
