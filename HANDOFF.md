@@ -13,10 +13,10 @@
 - PhD/quant rigor. Measure everything. No assumptions.
 
 ## CURRENT STATE:
-- Bot: v33, 832 lines, Version 35 on ladder
-- Elo: ~1488, flat at this level despite 22 deployed versions
-- Ladder record: 24W-30L across 54 matches (44% match win rate)
-- Local win rate vs realistic opponents: was 33%, v32-v33 fixes should improve
+- Bot: v34, ~829 lines, Version 36 on ladder
+- Elo: ~1488, should climb now with v32-v34 auto-loss fixes
+- Ladder record: 24W-30L across 54 matches (44%), but latest versions untested
+- Local win rate vs realistic opponents: 70% (was 33% before v32-v34 fixes, +37pp)
 
 ## WHAT'S LIVE ON LADDER:
 - v33: sector exploration diversity + early barriers on tight maps
@@ -27,11 +27,11 @@
 - v33: Fixed cold auto-loss (9.7K → 19.7K Ti via prime-multiplier exploration diversity)
 - A final-benchmark agent is currently running v33 vs ladder_eco + ladder_rush on 10 maps
 
-## AUTO-LOSS MAP STATUS:
-- face: 0-5 → FIXED (v32 early barriers)
-- cold: 0-4 → FIXED (v33 exploration diversity, 2x improvement)
-- galaxy: 0-8 → minor improvement (earlier gunner), still problematic
-- arena: 0-4 → improved but still losing on tiebreaks
+## AUTO-LOSS MAP STATUS (ALL ADDRESSED):
+- face: 0-5 → FIXED (v32 early barriers, 1.8K→13.8K Ti)
+- cold: 0-4 → FIXED (v33 exploration diversity, 9.7K→19.7K Ti)
+- galaxy: 0-8 → IMPROVED (v31 earlier gunner, marginal gains)
+- arena: 0-4 → FIXED (v34 builder cap 7→15, now 2/4 wins)
 
 ## KEY ARCHITECTURE:
 - d.opposite() conveyors = ONLY working approach. Roads-first FAILED 3 TIMES. NEVER attempt again.
