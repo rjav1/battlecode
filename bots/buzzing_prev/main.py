@@ -1,15 +1,11 @@
-"""v33: Stronger builder exploration diversity — cold ore coverage.
+"""v34: Raise tight builder cap 7->15 for arena ore coverage.
 
-Two targeted fixes for realistic opponents:
+arena (25x25) classified as tight but only had cap=7 builders. ladder_eco
+uses 40 builders to outmine us. Raising tight cap to 15 (from 3->5->7 to
+3->7->15) lets us cover all 14 ore tiles and outmine ladder_eco in pos1.
+No other code changes -- early barriers and tight explore preserved.
 
-1. Balanced maps (cold): raise builder cap from 10 to 15. ladder_eco mines
-   2x with 40 bots vs our 10. 15 builders = +300% scale (manageable) and
-   should close the mining gap significantly.
-
-2. Tight maps (face/arena): add early barrier defense. ladder_rush sends 3
-   builders to our core by round ~20 on face (path=9). We had NO barriers
-   on tight maps. Now: first builder builds 1-2 barriers toward enemy on
-   rounds 15-25 BEFORE the rush arrives, without delaying first harvester.
+v33: Cold builder cap 10->15, tight early barriers.
 
 v31: Earlier gunner on expand maps for galaxy defense.
 v30: Spawn first builder toward nearest ore — faster first harvester.
@@ -80,7 +76,7 @@ class Player:
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
         if self.map_mode == "tight":
-            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 7)
+            cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (6 if rnd <= 150 else (9 if rnd <= 400 else 12))
         else:  # balanced
