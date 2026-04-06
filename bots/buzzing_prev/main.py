@@ -1,6 +1,6 @@
-"""v12: Lower bridge threshold — fix cold/shish_kebab/galaxy map losses.
+"""v14: Lower reserves (cost+5), faster exploration rotation (//100) — closing economy gap.
 
-d.opposite() conveyors, BFS nav, moderate builder scaling (cap 20), lower reserves,
+d.opposite() conveyors, BFS nav, moderate builder scaling, lower reserves (cost+5 everywhere),
 bridge fallback, gunner placement, attacker raider, symmetry detection, road-destroy fix,
 barrier walls on enemy-facing side of core. Gunners replace sentinels (cheaper, lower scale).
 """
@@ -79,7 +79,7 @@ class Player:
             return
         ti = c.get_global_resources()[0]
         cost = c.get_builder_bot_cost()[0]
-        if ti < cost + 10:
+        if ti < cost + 5:
             return
         for d in DIRS:
             sp = pos.add(d)
@@ -176,7 +176,7 @@ class Player:
             ore = self._best_adj_ore(c, pos)
             if ore is not None:
                 ti = c.get_global_resources()[0]
-                if ti >= c.get_harvester_cost()[0] + 15:
+                if ti >= c.get_harvester_cost()[0] + 5:
                     c.build_harvester(ore)
                     self.harvesters_built += 1
                     self.target = None
@@ -269,7 +269,7 @@ class Player:
 
     def _explore(self, c, pos, passable):
         idx = ((self.my_id or 0) * 3 + self.explore_idx
-               + c.get_current_round() // 150) % len(DIRS)
+               + c.get_current_round() // 100) % len(DIRS)
         d = DIRS[idx]
         dx, dy = d.delta()
         far = Position(pos.x + dx * 15, pos.y + dy * 15)
