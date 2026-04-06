@@ -1,4 +1,6 @@
-"""v37: Armed sentinel + attacker infra targeting + bridge shortcut.
+"""v39: Late-game Ax tiebreaker — one builder builds Ax harvester+foundry at round 1800+.
+
+v37: Armed sentinel + attacker infra targeting + bridge shortcut.
 - Splitter+branch+sentinel ammo at round 1000+ for late-game area denial.
 - Attacker targets enemy conveyors/harvesters instead of core (500HP).
 - Bridge shortcut for harvesters 3-5 tiles from core — direct resource delivery.
@@ -294,7 +296,7 @@ class Player:
         if (self._bridge_target and self.core_pos
                 and c.get_action_cooldown() == 0):
             ore = self._bridge_target
-            if 9 < ore.distance_squared(self.core_pos) <= 25:
+            if 9 < ore.distance_squared(self.core_pos) <= 36:
                 ti = c.get_global_resources()[0]
                 bc = c.get_bridge_cost()[0]
                 if ti >= bc + 5:
@@ -324,6 +326,34 @@ class Player:
                                 pass
                         if built:
                             break
+                    # Chain-join bridge: connect to nearest allied chain tile
+                    if not built and self.core_pos:
+                        my_team = c.get_team()
+                        best_chain = None
+                        best_chain_dist = 10**9
+                        for eid in c.get_nearby_buildings():
+                            try:
+                                if (c.get_entity_type(eid) in (EntityType.CONVEYOR, EntityType.SPLITTER)
+                                        and c.get_team(eid) == my_team):
+                                    epos = c.get_position(eid)
+                                    # Chain tile must be closer to core than the harvester
+                                    if (epos.distance_squared(self.core_pos) < ore.distance_squared(self.core_pos)):
+                                        d = ore.distance_squared(epos)
+                                        if d < best_chain_dist:
+                                            best_chain = epos
+                                            best_chain_dist = d
+                            except Exception:
+                                pass
+                        if best_chain and best_chain_dist <= 36:  # chain tile within 6 tiles
+                            for bd in DIRS:
+                                bp = ore.add(bd)
+                                try:
+                                    if c.can_build_bridge(bp, best_chain):
+                                        c.build_bridge(bp, best_chain)
+                                        built = True
+                                        break
+                                except Exception:
+                                    pass
                     self._bridge_target = None
                     if built:
                         return
@@ -359,6 +389,30 @@ class Player:
                 and map_mode != "tight"
                 and c.get_global_resources()[0] >= 70):
             if self._place_armed_sentinel(c, pos):
+                return
+
+        # Late-game Ax tiebreaker: one builder seeks Ax ore at round 1800+
+        if (not self.is_attacker
+                and rnd >= 1800
+                and (self.my_id or 0) % 6 == 2
+                and not hasattr(self, '_ax_done')
+                and self.core_pos):
+            import sys
+            ax_step = getattr(self, '_ax_step', 'N/A')
+            # Debug: report all Ax ore tiles in vision
+            ax_info = []
+            for t in c.get_nearby_tiles():
+                if c.get_tile_env(t) == Environment.ORE_AXIONITE:
+                    bid = c.get_tile_building_id(t)
+                    btype = None
+                    if bid is not None:
+                        try:
+                            btype = c.get_entity_type(bid).name
+                        except Exception:
+                            btype = "?"
+                    ax_info.append(f"{t}:bid={bid}:{btype}")
+            print(f"[AX] r{rnd} id={self.my_id} pos={pos} step={ax_step} ax_tiles={ax_info}", file=sys.stderr)
+            if self._build_ax_tiebreaker(c, pos):
                 return
 
         # Barrier placement near core
@@ -747,6 +801,202 @@ class Player:
                     self._sentinel_step = 5
             except Exception:
                 self._sentinel_step = 5
+            return True
+
+        return False
+
+    # -------------------------------------------------------- Ax tiebreaker
+    def _build_ax_tiebreaker(self, c, pos):
+        """Late-game foundry splice for TB#1 insurance.
+
+        Ax ore tiles likely have harvesters already. We splice a foundry INLINE
+        on the conveyor chain between an Ax harvester and core. The foundry
+        receives raw Ax from the chain, needs Ti input from another direction.
+
+        Steps:
+        0: Find Ax harvester + conveyor on its chain to replace with foundry
+        1: Walk to target
+        2: Destroy conveyor + build foundry
+        3: Build output conveyor from foundry toward core
+        4: Build Ti feeder conveyor into foundry
+        5: Done
+        """
+        if not hasattr(self, '_ax_step'):
+            self._ax_step = 0
+            self._ax_harv_pos = None
+            self._ax_foundry_pos = None
+            self._ax_chain_dir = None
+
+        if self._ax_step == 0:
+            my_team = c.get_team()
+            best_harv = None
+            best_dist = 10**9
+            for eid in c.get_nearby_buildings():
+                try:
+                    if (c.get_entity_type(eid) == EntityType.HARVESTER
+                            and c.get_team(eid) == my_team):
+                        hpos = c.get_position(eid)
+                        if c.get_tile_env(hpos) == Environment.ORE_AXIONITE:
+                            d = pos.distance_squared(hpos)
+                            if d < best_dist:
+                                best_dist = d
+                                best_harv = hpos
+                except Exception:
+                    pass
+            if best_harv is None:
+                if not hasattr(self, '_ax_search_rounds'):
+                    self._ax_search_rounds = 0
+                self._ax_search_rounds += 1
+                if self._ax_search_rounds > 100:
+                    self._ax_done = True
+                    return False
+                self._walk_to(c, pos, self.core_pos)
+                return True
+
+            self._ax_harv_pos = best_harv
+            # Find a conveyor adjacent to the Ax harvester to replace with foundry
+            best_conv = None
+            best_score = 10**9
+            for d in DIRS:
+                cp = best_harv.add(d)
+                try:
+                    if not c.is_in_vision(cp):
+                        continue
+                    bid = c.get_tile_building_id(cp)
+                    if bid is None:
+                        continue
+                    if c.get_team(bid) != my_team:
+                        continue
+                    if c.get_entity_type(bid) == EntityType.CONVEYOR:
+                        cdist = cp.distance_squared(self.core_pos) if self.core_pos else 0
+                        if cdist < best_score:
+                            best_score = cdist
+                            best_conv = (cp, c.get_direction(bid))
+                except Exception:
+                    pass
+            if best_conv:
+                self._ax_foundry_pos = best_conv[0]
+                self._ax_chain_dir = best_conv[1]
+            else:
+                # No conveyor — place foundry on empty tile adjacent to harvester
+                for d in DIRS:
+                    fp = best_harv.add(d)
+                    try:
+                        if c.is_in_vision(fp) and c.is_tile_empty(fp):
+                            self._ax_foundry_pos = fp
+                            self._ax_chain_dir = fp.direction_to(self.core_pos)
+                            break
+                    except Exception:
+                        pass
+                else:
+                    self._ax_done = True
+                    return False
+            self._ax_step = 1
+            return True
+
+        if self._ax_step == 1:
+            if pos.distance_squared(self._ax_foundry_pos) > 2:
+                self._walk_to(c, pos, self._ax_foundry_pos)
+                return True
+            self._ax_step = 2
+
+        if self._ax_step == 2:
+            if c.get_action_cooldown() != 0:
+                return True
+            ti = c.get_global_resources()[0]
+            fc = c.get_foundry_cost()[0]
+            if ti < fc + 5:
+                return True
+            if pos.distance_squared(self._ax_foundry_pos) > 2:
+                self._walk_to(c, pos, self._ax_foundry_pos)
+                return True
+            try:
+                bid = c.get_tile_building_id(self._ax_foundry_pos)
+                if bid is not None:
+                    if c.can_destroy(self._ax_foundry_pos):
+                        c.destroy(self._ax_foundry_pos)
+                if c.can_build_foundry(self._ax_foundry_pos):
+                    c.build_foundry(self._ax_foundry_pos)
+                    self._ax_step = 3
+                else:
+                    self._ax_done = True
+            except Exception:
+                self._ax_done = True
+            return True
+
+        if self._ax_step == 3:
+            # Build output conveyor from foundry toward core
+            if c.get_action_cooldown() != 0:
+                return True
+            ti = c.get_global_resources()[0]
+            cc = c.get_conveyor_cost()[0]
+            if ti < cc + 5:
+                return True
+            out_dir = self._ax_chain_dir or self._ax_foundry_pos.direction_to(self.core_pos)
+            for d in [out_dir, out_dir.rotate_left(), out_dir.rotate_right(),
+                      out_dir.rotate_left().rotate_left(), out_dir.rotate_right().rotate_right()]:
+                out_pos = self._ax_foundry_pos.add(d)
+                try:
+                    if pos.distance_squared(out_pos) > 2:
+                        continue
+                    if c.can_build_conveyor(out_pos, d):
+                        c.build_conveyor(out_pos, d)
+                        self._ax_step = 4
+                        return True
+                except Exception:
+                    pass
+            # Walk to foundry to try from closer
+            self._walk_to(c, pos, self._ax_foundry_pos)
+            if not hasattr(self, '_ax_step3_tries'):
+                self._ax_step3_tries = 0
+            self._ax_step3_tries += 1
+            if self._ax_step3_tries > 20:
+                self._ax_done = True
+                self._ax_step = 5
+            return True
+
+        if self._ax_step == 4:
+            # Build a Ti feeder conveyor pointing INTO the foundry
+            if c.get_action_cooldown() != 0:
+                return True
+            ti = c.get_global_resources()[0]
+            cc = c.get_conveyor_cost()[0]
+            if ti < cc + 5:
+                self._ax_done = True
+                self._ax_step = 5
+                return True
+            # Check if any adjacent conveyor already feeds into foundry
+            my_team = c.get_team()
+            for d in DIRS:
+                adj = self._ax_foundry_pos.add(d)
+                try:
+                    if not c.is_in_vision(adj):
+                        continue
+                    bid = c.get_tile_building_id(adj)
+                    if bid is not None and c.get_team(bid) == my_team:
+                        if c.get_entity_type(bid) in (EntityType.CONVEYOR, EntityType.HARVESTER):
+                            # An existing conveyor/harvester is adjacent — foundry may get Ti
+                            self._ax_done = True
+                            self._ax_step = 5
+                            return True
+                except Exception:
+                    pass
+            # Build a new conveyor on empty tile adjacent to foundry, pointing in
+            for d in DIRS:
+                adj = self._ax_foundry_pos.add(d)
+                try:
+                    if pos.distance_squared(adj) > 2:
+                        continue
+                    feed_dir = d.opposite()
+                    if c.can_build_conveyor(adj, feed_dir):
+                        c.build_conveyor(adj, feed_dir)
+                        self._ax_done = True
+                        self._ax_step = 5
+                        return True
+                except Exception:
+                    pass
+            self._ax_done = True
+            self._ax_step = 5
             return True
 
         return False
