@@ -46,7 +46,18 @@ Matches visible (most recent first, 10 shown):
 
 ---
 
-## Check-in #2 — (pending)
+## Check-in #2 — ~22:30
+
+**V48 deployed** during this window. V47 era boundary: ~22:00–22:27 approx.
+
+New match since check-in #1:
+| Time  | As Team | Opponent     | Score | Result | Notes |
+|-------|---------|--------------|-------|--------|-------|
+| 22:26 | A       | The Defect   | 2-3   | LOSS   | V47/V48 boundary — unclear which version |
+
+V48 era starts now. No confirmed V48 matches yet (next match likely V48).
+
+**V48 changes:** Balanced caps raised + gunners removed (922 lines).
 
 ---
 
@@ -66,4 +77,5 @@ Matches visible (most recent first, 10 shown):
 
 | Version | Wins | Losses | Win% | Notes |
 |---------|------|--------|------|-------|
-| V47 confirmed era (22:00+) | 2 | 0 | 100% | Only 2 matches so far |
+| V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
+| V48 era | 0 | 0 | — | Just deployed |

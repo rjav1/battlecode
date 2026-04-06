@@ -76,7 +76,8 @@ class Player:
         if not hasattr(self, 'map_mode'):
             w, h = c.get_map_width(), c.get_map_height()
             area = w * h
-            if area <= 625:      # 25x25 or smaller
+            short_dim = min(w, h)
+            if area <= 625 or short_dim <= 22:  # tight OR narrow/shallow
                 self.map_mode = "tight"
             elif area >= 1600:   # 40x40 or larger
                 self.map_mode = "expand"
@@ -92,7 +93,7 @@ class Player:
         elif self.map_mode == "expand":
             cap = 3 if rnd <= 30 else (5 if rnd <= 150 else (8 if rnd <= 400 else 15))
         else:  # balanced
-            cap = 4 if rnd <= 30 else (6 if rnd <= 100 else (7 if rnd <= 200 else 8))
+            cap = 3 if rnd <= 25 else (4 if rnd <= 100 else (6 if rnd <= 300 else 8))
         pos = c.get_position()
         vis_harv = 0
         for eid in c.get_nearby_buildings():
