@@ -1,4 +1,6 @@
-"""v22: Wall-density-adaptive ore scoring — maze maps use nearest-to-builder, open maps use core-proximate.
+"""v23: Sector-based exploration on large maps — builders spread to map edges from core for better ore access.
+
+v22: Wall-density-adaptive ore scoring — maze maps use nearest-to-builder, open maps use core-proximate.
 
 v21: Simplify gunner placement — no chain destruction.
 
@@ -368,13 +370,32 @@ class Player:
                         return
 
     def _explore(self, c, pos, passable):
-        idx = ((self.my_id or 0) * 3 + self.explore_idx
-               + c.get_current_round() // 100) % len(DIRS)
-        d = DIRS[idx]
-        dx, dy = d.delta()
         w, h = c.get_map_width(), c.get_map_height()
-        reach = max(w, h) if w * h <= 625 else 15
-        far = Position(pos.x + dx * reach, pos.y + dy * reach)
+        rnd = c.get_current_round()
+        mid = self.my_id or 0
+        area = w * h
+
+        if area >= 1600:
+            # Large maps: sector-based from core, target map edge, rotate slowly
+            sector = (mid + self.explore_idx + rnd // 200) % len(DIRS)
+            d = DIRS[sector]
+            dx, dy = d.delta()
+            if self.core_pos:
+                cx, cy = self.core_pos.x, self.core_pos.y
+            else:
+                cx, cy = pos.x, pos.y
+            reach = max(w, h)
+            tx = max(0, min(w - 1, cx + dx * reach))
+            ty = max(0, min(h - 1, cy + dy * reach))
+            far = Position(tx, ty)
+        else:
+            # Small/medium maps: original spread pattern from builder position
+            idx = (mid * 3 + self.explore_idx
+                   + rnd // 100) % len(DIRS)
+            d = DIRS[idx]
+            dx, dy = d.delta()
+            reach = max(w, h) if area <= 625 else 15
+            far = Position(pos.x + dx * reach, pos.y + dy * reach)
         self._nav(c, pos, far, passable)
 
     # -------------------------------------------------------- Gunner placement
