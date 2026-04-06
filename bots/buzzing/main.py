@@ -96,11 +96,11 @@ class Player:
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
         if self.map_mode == "tight":
-            cap = 3 if rnd <= 20 else (7 if rnd <= 100 else 15)
+            cap = 3 if rnd <= 20 else (5 if rnd <= 100 else 8)
         elif self.map_mode == "expand":
-            cap = 3 if rnd <= 30 else (6 if rnd <= 150 else (12 if rnd <= 400 else 16))
+            cap = 3 if rnd <= 30 else (5 if rnd <= 150 else (8 if rnd <= 400 else 12))
         else:  # balanced
-            cap = 3 if rnd <= 25 else (5 if rnd <= 100 else (8 if rnd <= 300 else 10))
+            cap = 3 if rnd <= 25 else (4 if rnd <= 100 else (6 if rnd <= 300 else 8))
         pos = c.get_position()
         vis_harv = 0
         for eid in c.get_nearby_buildings():
@@ -353,7 +353,7 @@ class Player:
             if self._place_gunner(c, pos):
                 return
 
-        # Attacker assignment: after round 500, 4+ harvesters, id%6==5
+        # Attacker assignment: after round 800, 4+ harvesters, id%6==5
         if (not self.is_attacker and rnd > 500
                 and self.harvesters_built >= 4
                 and (self.my_id or 0) % 6 == 5):
