@@ -343,6 +343,16 @@ class Player:
             if built:
                 return
 
+        # Spend-down defense: build extra gunner when Ti is high
+        if (rnd > 300 and self.core_pos
+                and self.harvesters_built >= 3
+                and pos.distance_squared(self.core_pos) <= 25
+                and c.get_action_cooldown() == 0
+                and c.get_global_resources()[0] > 300
+                and self.gunner_placed < 5):
+            if self._place_gunner(c, pos):
+                return
+
         # Attacker assignment: after round 500, 4+ harvesters, id%6==5
         if (not self.is_attacker and rnd > 500
                 and self.harvesters_built >= 4
@@ -358,7 +368,7 @@ class Player:
         harv_req = 1 if map_mode == "tight" else 3
         if ((self.my_id or 0) % 5 == 1 and rnd > gunner_round
                 and self.harvesters_built >= harv_req and self.core_pos
-                and self.gunner_placed < 3
+                and self.gunner_placed < 5
                 and c.get_global_resources()[0] >= 20):
             if self._place_gunner(c, pos):
                 return
@@ -366,7 +376,7 @@ class Player:
         # Armed sentinel: splice splitter+branch+sentinel off existing chain
         if (not self.is_attacker
                 and self._sentinel_step < 5
-                and rnd >= 1000
+                and rnd >= 500
                 and self.harvesters_built >= 5
                 and self.core_pos
                 and map_mode != "tight"
@@ -617,7 +627,7 @@ class Player:
                     gunner_count += 1
             except Exception:
                 pass
-        if gunner_count >= 3:
+        if gunner_count >= 5:
             return False
 
         ti = c.get_global_resources()[0]
