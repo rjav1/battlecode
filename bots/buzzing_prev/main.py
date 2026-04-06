@@ -77,7 +77,7 @@ class Player:
                     vis_harv += 1
             except Exception:
                 pass
-        econ_cap = vis_harv * 2 + 3
+        econ_cap = vis_harv * 3 + 4
         cap = min(cap, econ_cap)
         if units >= cap:
             return
