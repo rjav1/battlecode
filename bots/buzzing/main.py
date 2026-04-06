@@ -1,8 +1,10 @@
-"""v12: Lower bridge threshold — fix cold/shish_kebab/galaxy map losses.
+"""v13: Reduce barriers on tight maps, delay military features.
 
 d.opposite() conveyors, BFS nav, moderate builder scaling (cap 20), lower reserves,
 bridge fallback, gunner placement, attacker raider, symmetry detection, road-destroy fix,
 barrier walls on enemy-facing side of core. Gunners replace sentinels (cheaper, lower scale).
+No barriers on tight/small maps (saves Ti on shish_kebab etc).
+Gunner trigger delayed 200→400, attacker 500→700, attacker harvester req 4→5.
 """
 
 from collections import deque
@@ -146,17 +148,17 @@ class Player:
 
         rnd = c.get_current_round()
 
-        # Attacker assignment: after round 500, 4+ harvesters, id%6==5
-        if (not self.is_attacker and rnd > 500
-                and self.harvesters_built >= 4
+        # Attacker assignment: after round 700, 5+ harvesters, id%6==5
+        if (not self.is_attacker and rnd > 700
+                and self.harvesters_built >= 5
                 and (self.my_id or 0) % 6 == 5):
             self.is_attacker = True
         if self.is_attacker:
             self._attack(c, pos, passable)
             return
 
-        # Gunner builder: id%5==1, after round 200, 3+ harvesters
-        if ((self.my_id or 0) % 5 == 1 and rnd > 200
+        # Gunner builder: id%5==1, after round 400, 3+ harvesters
+        if ((self.my_id or 0) % 5 == 1 and rnd > 400
                 and self.harvesters_built >= 3 and self.core_pos
                 and self.sent_step < 6
                 and c.get_global_resources()[0] >= 80):
@@ -404,6 +406,11 @@ class Player:
     # ------------------------------------------------------------ Barriers
     def _build_barriers(self, c, pos):
         """Place barriers on the enemy-facing side of core, 2-3 tiles out."""
+        # Skip barriers on tight maps — not enough resources to justify
+        map_mode = getattr(self, 'map_mode', 'balanced')
+        if map_mode == "tight":
+            return False
+
         enemy_dir = self._get_enemy_direction(c)
         if not enemy_dir:
             return False

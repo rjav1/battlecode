@@ -1,4 +1,4 @@
-"""v11: Economy + bridges + gunners + attacker + barriers + moderate scaling.
+"""v12: Lower bridge threshold — fix cold/shish_kebab/galaxy map losses.
 
 d.opposite() conveyors, BFS nav, moderate builder scaling (cap 20), lower reserves,
 bridge fallback, gunner placement, attacker raider, symmetry detection, road-destroy fix,
@@ -234,6 +234,26 @@ class Player:
                 c.move(d)
                 return
 
+        # Bridge fallback (before road — bridges cross walls, roads don't)
+        if c.get_action_cooldown() == 0:
+            ti = c.get_global_resources()[0]
+            bc = c.get_bridge_cost()[0]
+            # Tight maps: be very aggressive; other maps: still low threshold
+            map_mode = getattr(self, 'map_mode', 'balanced')
+            bridge_threshold = bc + 10 if map_mode == "tight" else bc + 20
+            if ti >= bridge_threshold:
+                for d in dirs[:3]:
+                    for step in range(2, 4):
+                        dx, dy = d.delta()
+                        bt = Position(pos.x + dx * step, pos.y + dy * step)
+                        if bt.distance_squared(pos) > 9:
+                            continue
+                        for bd in DIRS:
+                            bp = pos.add(bd)
+                            if c.can_build_bridge(bp, bt):
+                                c.build_bridge(bp, bt)
+                                return
+
         # Road fallback
         if c.get_action_cooldown() == 0:
             ti = c.get_global_resources()[0]
@@ -246,23 +266,6 @@ class Player:
                     if c.can_build_road(rp):
                         c.build_road(rp)
                         return
-
-        # Bridge fallback
-        if c.get_action_cooldown() == 0:
-            ti = c.get_global_resources()[0]
-            bc = c.get_bridge_cost()[0]
-            if ti >= bc + 50:
-                for d in dirs[:3]:
-                    for step in range(2, 4):
-                        dx, dy = d.delta()
-                        bt = Position(pos.x + dx * step, pos.y + dy * step)
-                        if bt.distance_squared(pos) > 9:
-                            continue
-                        for bd in DIRS:
-                            bp = pos.add(bd)
-                            if c.can_build_bridge(bp, bt):
-                                c.build_bridge(bp, bt)
-                                return
 
     def _explore(self, c, pos, passable):
         idx = ((self.my_id or 0) * 3 + self.explore_idx
