@@ -1,4 +1,11 @@
-"""v30: Spawn first builder toward nearest ore — faster first harvester.
+"""v31: Earlier gunner on expand maps for galaxy defense.
+
+On expand maps (40x40+), build first gunner at round 150 instead of 200.
+Galaxy (40x40, path=34) is vulnerable to rushers arriving by round ~34.
+Earlier gunner provides defense 50 rounds sooner without economy impact
+(3+ harvesters already required, only triggered by id%5==1 builder).
+
+v30: Spawn first builder toward nearest ore — faster first harvester.
 
 The very first builder is now spawned in the direction of the nearest visible
 ore from the core (vision r²=36). This saves 2-5 rounds of exploration and
@@ -295,10 +302,11 @@ class Player:
             self._attack(c, pos, passable)
             return
 
-        # Gunner builder: id%5==1, after round 200, 3+ harvesters (skip on tight maps)
+        # Gunner builder: id%5==1, earlier on expand maps for galaxy defense
         map_mode = getattr(self, 'map_mode', 'balanced')
+        gunner_round = 150 if map_mode == "expand" else 200
         if (map_mode != "tight"
-                and (self.my_id or 0) % 5 == 1 and rnd > 200
+                and (self.my_id or 0) % 5 == 1 and rnd > gunner_round
                 and self.harvesters_built >= 3 and self.core_pos
                 and self.gunner_placed < 3
                 and c.get_global_resources()[0] >= 20):
