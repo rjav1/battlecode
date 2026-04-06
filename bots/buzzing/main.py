@@ -113,6 +113,14 @@ class Player:
             time_floor = min(6 + rnd // 200, 10)
         econ_cap = max(time_floor, vis_harv * 3 + 4)
         cap = min(cap, econ_cap)
+        # High-bank override: only on expand maps where more ore exists
+        if self.map_mode == "expand":
+            ti_now = c.get_global_resources()[0]
+            if ti_now > 500:
+                cap = cap + 2
+            if ti_now > 1000:
+                cap = cap + 3  # total +5 from base
+            cap = min(cap, 25)
         if units >= cap:
             return
         ti = c.get_global_resources()[0]
@@ -759,11 +767,12 @@ class Player:
                     barrier_count += 1
             except Exception:
                 pass
-        if barrier_count >= 6:
+        ti = c.get_global_resources()[0]
+        max_barriers = 6 if ti < 500 else (10 if ti < 1000 else 15)
+        if barrier_count >= max_barriers:
             return False
 
-        ti = c.get_global_resources()[0]
-        if ti < c.get_barrier_cost()[0] + 40:
+        if ti < c.get_barrier_cost()[0] + 15:
             return False
 
         dx, dy = enemy_dir.delta()

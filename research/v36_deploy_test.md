@@ -35,8 +35,38 @@ All three criteria met:
 
 **DEPLOYED** as Version 37 (ID: 6c9a6b49-ee9d-4572-9eaa-d97c1f3ed8f4)
 
+## v36b: Econ_cap Tuned Down (Version 38)
+
+**Reason:** chemistry_class regressed 27% with v37 econ_cap values (26840→19560 Ti mined by prev).  
+**Fix:** Tuned-down time_floor ramps applied by team-lead before retest.
+
+| Parameter | v37 value | v38 value |
+|-----------|-----------|-----------|
+| Expand time_floor | min(8+rnd//100, 20) | min(8+rnd//200, 15) |
+| Balanced time_floor | 15 | min(6+rnd//150, 12) |
+| Tight time_floor | 12 | min(6+rnd//200, 10) |
+| Expand cap | 20 | 16 |
+
+### Re-test Results (buzzing v38 vs buzzing_prev/v34)
+
+| Map | Winner | Notes |
+|-----|--------|-------|
+| default_medium1 | buzzing | 11060 vs 6807 Ti |
+| hourglass | buzzing | 26211 vs 28613 Ti (we had more buildings) |
+| landscape | buzzing | 10580 vs 7757 Ti |
+| corridors | buzzing_prev | Identical Ti (19417 both), coin flip tiebreak |
+| settlement | buzzing | 28751 vs 8921 Ti (massive margin, 16 vs 10 units) |
+| chemistry_class | buzzing | 17015 vs 10270 Ti (buzzing wins even though prev mined more) |
+
+**Regression result: 4/5 wins** (threshold: 3/5)  
+**Face:** Full 2000 rounds, no core destruction. buzzing_prev tiebreak 13108 vs 13446 (core fix intact).  
+**Self-play:** No crash.
+
+**DEPLOYED** as Version 38 (ID: aa4a2032-415c-4edf-8317-b959472d3b62)
+
 ## Notes
 
 - corridors loss is a near-perfect mirror (identical Ti both sides) — essentially a coin flip
 - face tiebreak loss (13446 vs 13108) suggests buzzing_prev slightly better economy there, but survival is the key metric
 - The core fix (removing `map_mode != "tight"` guard) solves the actual bug; economy tuning is secondary
+- chemistry_class: buzzing wins on stored Ti despite mining less — more efficient spending on infrastructure
