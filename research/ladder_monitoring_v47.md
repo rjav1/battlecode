@@ -110,6 +110,18 @@ Notable:
 
 ---
 
+## V51 Era (~00:28+)
+
+V51 deployed ~00:28. First match at 00:36.
+
+| Time  | As Team | Opponent     | Score | Result | Notes |
+|-------|---------|--------------|-------|--------|-------|
+| 00:36 | A       | Code Monkeys | 3-2   | WIN    | First V51 match |
+
+**V51 record so far: 1W-0L**
+
+---
+
 ## Running Totals
 
 | Version | Wins | Losses | Win% | Notes |
@@ -117,3 +129,4 @@ Notable:
 | V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
 | V48 era | 0 | 0 | — | Superseded before any matches played |
 | V49 era | 7 | 5 | 58% | Beat Botz4Lyf; two 0-5 sweeps (N, Pray and Deploy) |
+| V51 era | 1 | 0 | 100% | 1 match only so far |
