@@ -10,7 +10,11 @@
 
 ## V61 Matches
 
-*(No V61 matches yet — waiting for first matchmaking cycle ~19:43+)*
+| Result | Score | Opponent | Opp Elo | Elo Delta | Time |
+|--------|-------|----------|---------|-----------|------|
+| WIN | 4-1 | Taro Noodle House | 1473 | +9.7 | 19:56 |
+
+**V61 total: 1W-0L (100%), current Elo ~1480**
 
 ---
 
@@ -35,5 +39,6 @@
 
 | Check Time | New Matches | V61 Record | Elo | Notes |
 |------------|-------------|------------|-----|-------|
-| 19:38 | 0 V61 | 0W-0L | ~1474 | V61 just deployed |
+| 19:58 | 1 V61 | 1W-0L | ~1480 | WIN 4-1 vs Taro Noodle House — strong start |
+| 19:38 | 0 V61 | 0W-0L | ~1474 | V61 just deployed (V60 still 4-5 at deploy, Highly Suspect LOSS at 19:47) |
 
