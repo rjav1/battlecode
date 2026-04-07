@@ -10,7 +10,11 @@
 
 ## V60 Matches
 
-*(No V60 matches yet — waiting for first matchmaking cycle)*
+| Result | Score | Opponent | Opp Elo | Elo Delta | Time |
+|--------|-------|----------|---------|-----------|------|
+| WIN | 3-2 | Cenomanum | 1469 | +3.3 | 18:27 |
+
+**V60 total: 1W-0L (100%), current Elo ~1470**
 
 ---
 
@@ -34,6 +38,7 @@ V60 deployed 18:11 — oslsnst (created 18:12) still ran as V59. First true V60 
 
 | Check Time | New Matches | V60 Record | Elo | Notes |
 |------------|-------------|------------|-----|-------|
+| 18:28 | 1 V60 | 1W-0L | ~1470 | WIN 3-2 vs Cenomanum — V60 era opens well |
 | 18:20 | 0 V60 | 0W-0L | ~1467 | V59 era ended 2W-4L; V60 first match imminent |
 | 18:10 | 0 V60 | 0W-0L | ~1470 | V60 just deployed, waiting |
 

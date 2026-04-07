@@ -272,43 +272,18 @@ class Player:
             else:
                 self._early_barriers = True
 
-        # Bridge shortcut: after building harvester, bridge to nearest infra or core
-        # Priority: chain-join (nearest allied conveyor/bridge closer to core) > core tile
+        # Bridge shortcut: after building harvester, bridge directly to core tile.
+        # Only fires for medium-range ore (dist^2 9-25): close ore uses conveyor chain,
+        # far ore uses conveyor chain. Chain-join leg removed — was breaking chains on corridors.
         if (self._bridge_target and self.core_pos
                 and c.get_action_cooldown() == 0):
             ore = self._bridge_target
+            ore_core_dist = ore.distance_squared(self.core_pos)
             built = False
-            ti = c.get_global_resources()[0]
-            bc = c.get_bridge_cost()[0]
-            if ti >= bc + 5:
-                # First: bridge to nearest allied chain tile closer to core
-                my_team = c.get_team()
-                best_chain = None
-                best_chain_dist = 10**9
-                for eid in c.get_nearby_buildings():
-                    try:
-                        if (c.get_entity_type(eid) in (EntityType.CONVEYOR, EntityType.SPLITTER, EntityType.BRIDGE)
-                                and c.get_team(eid) == my_team):
-                            epos = c.get_position(eid)
-                            if epos.distance_squared(self.core_pos) < ore.distance_squared(self.core_pos):
-                                d = ore.distance_squared(epos)
-                                if d < best_chain_dist:
-                                    best_chain = epos
-                                    best_chain_dist = d
-                    except Exception:
-                        pass
-                if best_chain:
-                    for bd in DIRS:
-                        bp = ore.add(bd)
-                        try:
-                            if c.can_build_bridge(bp, best_chain):
-                                c.build_bridge(bp, best_chain)
-                                built = True
-                                break
-                        except Exception:
-                            pass
-                # Fallback: bridge to core tile
-                if not built:
+            if 9 < ore_core_dist <= 25:
+                ti = c.get_global_resources()[0]
+                bc = c.get_bridge_cost()[0]
+                if ti >= bc + 5:
                     cx, cy = self.core_pos.x, self.core_pos.y
                     core_tiles = [Position(cx + dx, cy + dy)
                                   for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
@@ -537,7 +512,7 @@ class Player:
                 cx, cy = self.core_pos.x, self.core_pos.y
             else:
                 cx, cy = pos.x, pos.y
-            reach = min(w, h) // 2
+            reach = max(w, h)
             tx = max(0, min(w - 1, cx + dx * reach))
             ty = max(0, min(h - 1, cy + dy * reach))
             far = Position(tx, ty)

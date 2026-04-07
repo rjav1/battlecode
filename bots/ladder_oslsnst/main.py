@@ -1,40 +1,25 @@
 """ladder_oslsnst: Models oslsnst dual strategy.
-Tight maps: 2 attackers walk to enemy core, build gunner, feed ammo.
-Open maps: pure economy 6 builders.
+Tight maps (<= 625 area): 2 attackers rush enemy core with gunner.
+Open maps: pure eco with up to 6 builders.
 """
-from collections import deque
 from cambc import Controller, Direction, EntityType, Environment, Position
 
 DIRS = [d for d in Direction if d != Direction.CENTRE]
 
 
-def _bfs(c, start, goal_fn, passable_fn, max_dist=200):
-    visited = {start}
-    q = deque([(start, [])])
-    while q:
-        pos, path = q.popleft()
-        if goal_fn(pos):
-            return path
-        if len(path) >= max_dist:
-            continue
-        for d in DIRS:
-            nb = pos.add(d)
-            if nb not in visited and passable_fn(nb):
-                visited.add(nb)
-                q.append((nb, path + [d]))
-    return []
-
-
 class Player:
     def __init__(self):
         self.core_pos = None
-        self.my_id = None
-        self.map_mode = None
         self.enemy_core = None
+        self.map_mode = None
+        self.my_id = None
         self.target = None
         self.harvesters_built = 0
+        self.explore_idx = 0
+        self.role = None
+        self.stuck = 0
+        self.last_pos = None
         self.gunner_built = False
-        self.role = None  # 'attacker' or 'eco'
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -47,180 +32,153 @@ class Player:
         if self.map_mode is None:
             w, h = c.get_map_width(), c.get_map_height()
             area = w * h
-            short_dim = min(w, h)
-            self.map_mode = 'tight' if (area <= 625 or short_dim <= 22) else 'open'
-            self.core_pos = c.get_position()
-            # Infer enemy core (rotation symmetry fallback to reflection)
-            cx, cy = self.core_pos.x, self.core_pos.y
+            self.map_mode = 'tight' if (area <= 625 or min(w, h) <= 22) else 'open'
+            cp = c.get_position()
+            self.core_pos = cp
             mx, my = (w - 1) / 2, (h - 1) / 2
-            self.enemy_core = Position(round(2 * mx - cx), round(2 * my - cy))
-
-        rnd = c.get_current_round()
+            self.enemy_core = Position(round(2 * mx - cp.x), round(2 * my - cp.y))
         ti = c.get_global_resources()[0]
         n = c.get_unit_count()
-        pos = c.get_position()
-
-        # Tight: spawn 2 attackers + 1 eco, Open: spawn up to 6 eco builders
-        cap = 3 if self.map_mode == 'tight' else 7
-        if n < cap and ti >= 30:
+        cap = 4 if self.map_mode == 'tight' else 7
+        if n < cap and ti >= 30 and c.get_action_cooldown() == 0:
+            pos = c.get_position()
             for d in DIRS:
                 sp = pos.add(d)
                 if c.can_spawn(sp):
                     c.spawn_builder(sp)
-                    break
+                    return
 
     def _builder(self, c):
+        if self.my_id is None:
+            self.my_id = c.get_id()
         if self.core_pos is None:
-            # Find core
-            for bid in c.get_nearby_buildings():
-                if c.get_entity_type(bid) == EntityType.CORE and c.get_team(bid) == c.get_team():
-                    self.core_pos = c.get_position(bid)
-                    break
+            for eid in c.get_nearby_entities():
+                try:
+                    if c.get_entity_type(eid) == EntityType.CORE and c.get_team(eid) == c.get_team():
+                        self.core_pos = c.get_position(eid)
+                        w, h = c.get_map_width(), c.get_map_height()
+                        self.map_mode = 'tight' if (w * h <= 625 or min(w, h) <= 22) else 'open'
+                        cp = self.core_pos
+                        mx, my = (w - 1) / 2, (h - 1) / 2
+                        self.enemy_core = Position(round(2 * mx - cp.x), round(2 * my - cp.y))
+                        self.role = 'attacker' if (self.map_mode == 'tight'
+                                                   and self.my_id % 5 < 2) else 'eco'
+                        break
+                except Exception:
+                    continue
             if self.core_pos is None:
                 return
 
-        if self.my_id is None:
-            self.my_id = c.get_id()
-            w, h = c.get_map_width(), c.get_map_height()
-            area = w * h
-            short_dim = min(w, h)
-            self.map_mode = 'tight' if (area <= 625 or short_dim <= 22) else 'open'
-            cx, cy = self.core_pos.x, self.core_pos.y
-            mx, my = (w - 1) / 2, (h - 1) / 2
-            self.enemy_core = Position(round(2 * mx - cx), round(2 * my - cy))
-            # Assign role: first 2 builders attack on tight maps
-            mid = self.my_id % 10
-            if self.map_mode == 'tight' and mid < 4:
-                self.role = 'attacker'
-            else:
-                self.role = 'eco'
+        pos = c.get_position()
+        if pos == self.last_pos:
+            self.stuck += 1
+        else:
+            self.stuck = 0
+        self.last_pos = pos
+        if self.stuck > 6:
+            self.target = None
+            self.stuck = 0
+            self.explore_idx += 1
+
+        ti = c.get_global_resources()[0]
+        rnd = c.get_current_round()
 
         if self.role == 'attacker':
-            self._attack(c)
+            self._attack(c, pos, ti, rnd)
         else:
-            self._eco(c)
+            self._eco(c, pos, ti, rnd)
 
-    def _attack(self, c):
-        rnd = c.get_current_round()
-        pos = c.get_position()
-        ti = c.get_global_resources()[0]
-
-        # Wait until round 30 then move toward enemy
-        if rnd < 30:
+    def _attack(self, c, pos, ti, rnd):
+        if rnd < 40 or self.enemy_core is None:
             return
-
-        ec = self.enemy_core
-        if ec is None:
-            return
-
-        # Build gunner if close enough and not yet built
-        if not self.gunner_built and pos.distance_squared(ec) <= 20 and ti >= 10:
-            facing = pos.direction_to(ec)
+        # Build gunner facing enemy
+        if not self.gunner_built and c.get_action_cooldown() == 0 and ti >= 10:
+            ec = self.enemy_core
             for d in DIRS:
                 gp = pos.add(d)
+                facing = gp.direction_to(ec)
                 if c.can_build_gunner(gp, facing):
                     c.build_gunner(gp, facing)
                     self.gunner_built = True
                     return
-
-        # Feed ammo (Ti stacks): build conveyor toward gunner if adjacent
         if self.gunner_built:
-            # Stay near gunner to feed ammo via conveyors — just stay put
-            return
-
-        # Navigate toward enemy core along conveyors/roads
-        def passable(p):
-            try:
-                env = c.get_tile_env(p)
-                if env == Environment.WALL:
-                    return False
-                bid = c.get_tile_building_id(p)
-                if bid is not None:
-                    bt = c.get_entity_type(bid)
-                    if bt in (EntityType.CONVEYOR, EntityType.ROAD,
-                               EntityType.ARMOURED_CONVEYOR, EntityType.CORE):
-                        return True
-                    return False
-                return False
-            except Exception:
-                return False
-
-        if c.get_move_cooldown() > 0:
-            return
-
-        # Build road forward if stuck
-        best_d = pos.direction_to(ec)
-        for d in [best_d, best_d.rotate_left(), best_d.rotate_right()]:
-            np = pos.add(d)
-            if c.can_move(d):
-                c.move(d)
-                return
-            if ti >= 5:
+            return  # stay near gunner
+        # Navigate toward enemy via roads
+        w, h = c.get_map_width(), c.get_map_height()
+        dirs = sorted(DIRS, key=lambda d: pos.add(d).distance_squared(self.enemy_core))
+        for d in dirs:
+            nxt = pos.add(d)
+            if not (0 <= nxt.x < w and 0 <= nxt.y < h):
+                continue
+            if c.get_action_cooldown() == 0 and ti >= 1:
                 try:
-                    if c.can_build_road(np):
-                        c.build_road(np)
+                    if c.can_build_road(nxt):
+                        c.build_road(nxt)
                         return
                 except Exception:
                     pass
+            if c.get_move_cooldown() == 0 and c.can_move(d):
+                c.move(d)
+                return
 
-    def _eco(self, c):
-        pos = c.get_position()
-        ti = c.get_global_resources()[0]
-
-        if c.get_move_cooldown() > 0 and c.get_action_cooldown() > 0:
-            return
-
-        # Find nearest unoccupied ore
-        if self.target is None or c.get_action_cooldown() == 0:
-            best = None
-            best_d = 999999
-            for tp in c.get_nearby_tiles():
-                env = c.get_tile_env(tp)
-                if env == Environment.ORE_TITANIUM:
-                    bid = c.get_tile_building_id(tp)
-                    if bid is None:
-                        d = pos.distance_squared(tp)
-                        if d < best_d:
-                            best_d = d
-                            best = tp
-            if best:
-                self.target = best
-
-        if self.target is None:
-            return
-
-        # If on target, build harvester
-        if pos == self.target:
-            if c.get_action_cooldown() == 0 and ti >= 20:
-                if c.can_build_harvester(pos):
-                    c.build_harvester(pos)
-                    self.harvesters_built += 1
-                    self.target = None
-                    return
-            # Build conveyor back toward core
-            if c.get_action_cooldown() == 0 and ti >= 3:
-                core_d = pos.direction_to(self.core_pos)
-                back = core_d.opposite()
-                cp = pos.add(back)
-                try:
-                    if c.can_build_conveyor(cp, back.opposite()):
-                        c.build_conveyor(cp, back.opposite())
-                except Exception:
-                    pass
-            return
-
-        # Navigate to target using d.opposite() conveyors
-        if c.get_move_cooldown() > 0:
-            return
-
-        target_d = pos.direction_to(self.target)
-        np = pos.add(target_d)
-
-        if c.can_move(target_d):
-            c.move(target_d)
-        elif ti >= 3:
+    def _eco(self, c, pos, ti, rnd):
+        ore_tiles = []
+        for tp in c.get_nearby_tiles():
             try:
-                if c.can_build_conveyor(np, target_d.opposite()):
-                    c.build_conveyor(np, target_d.opposite())
+                if (c.get_tile_env(tp) == Environment.ORE_TITANIUM
+                        and c.get_tile_building_id(tp) is None):
+                    ore_tiles.append(tp)
             except Exception:
                 pass
+
+        if c.get_action_cooldown() == 0:
+            for tp in ore_tiles:
+                if pos.distance_squared(tp) <= 2 and ti >= 20:
+                    if c.can_build_harvester(tp):
+                        c.build_harvester(tp)
+                        self.harvesters_built += 1
+                        self.target = None
+                        return
+
+        if ore_tiles:
+            best, best_d = None, 999999
+            for tp in ore_tiles:
+                d = pos.distance_squared(tp)
+                if self.core_pos:
+                    d += tp.distance_squared(self.core_pos)
+                if d < best_d:
+                    best_d, best = d, tp
+            self.target = best
+
+        if self.target:
+            self._nav(c, pos, self.target, ti)
+        else:
+            self._explore(c, pos, ti, rnd)
+
+    def _nav(self, c, pos, target, ti, ti_reserve=5):
+        w, h = c.get_map_width(), c.get_map_height()
+        dirs = sorted(DIRS, key=lambda d: pos.add(d).distance_squared(target))
+        for d in dirs:
+            nxt = pos.add(d)
+            if not (0 <= nxt.x < w and 0 <= nxt.y < h):
+                continue
+            cc = c.get_conveyor_cost()[0]
+            if c.get_action_cooldown() == 0 and ti >= cc + ti_reserve:
+                if c.can_build_conveyor(nxt, d.opposite()):
+                    c.build_conveyor(nxt, d.opposite())
+                    return
+            if c.get_move_cooldown() == 0 and c.can_move(d):
+                c.move(d)
+                return
+
+    def _explore(self, c, pos, ti, rnd):
+        w, h = c.get_map_width(), c.get_map_height()
+        mid = self.my_id or 0
+        sector = (mid * 7 + self.explore_idx * 3 + rnd // 50) % len(DIRS)
+        d = DIRS[sector]
+        dx, dy = d.delta()
+        cx = self.core_pos.x if self.core_pos else pos.x
+        cy = self.core_pos.y if self.core_pos else pos.y
+        reach = max(w, h)
+        far = Position(max(0, min(w-1, cx + dx*reach)), max(0, min(h-1, cy + dy*reach)))
+        self._nav(c, pos, far, ti, ti_reserve=50)
