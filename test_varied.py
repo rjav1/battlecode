@@ -13,7 +13,8 @@ BATTLECODE_DIR = r"C:\Users\rahil\downloads\battlecode"
 # All available test bots
 BOTS = ['ladder_eco', 'ladder_rush', 'smart_eco', 'smart_defense',
         'balanced', 'sentinel_spam', 'rusher', 'fast_expand', 'adaptive',
-        'barrier_wall', 'turtle']
+        'barrier_wall', 'turtle',
+        'ladder_mergeconflict', 'ladder_fast_rush', 'ladder_hybrid_defense']
 
 # Maps categorized by type
 TIGHT_MAPS = ['face', 'arena', 'shish_kebab', 'default_small1', 'default_small2']
@@ -21,7 +22,18 @@ BALANCED_MAPS = ['default_medium1', 'cold', 'corridors', 'hourglass', 'butterfly
                  'binary_tree', 'dna', 'gaussian', 'mandelbrot']
 EXPAND_MAPS = ['galaxy', 'settlement', 'landscape', 'wasteland', 'tree_of_life',
                'default_large1', 'default_large2', 'pixel_forest']
-ALL_MAPS = TIGHT_MAPS + BALANCED_MAPS + EXPAND_MAPS
+# All 38 maps from maps/ directory (includes uncategorized ladder maps)
+ALL_MAPS = [
+    'arena', 'bar_chart', 'battlebot', 'binary_tree', 'butterfly',
+    'chemistry_class', 'cinnamon_roll', 'cold', 'corridors', 'cubes',
+    'default_large1', 'default_large2', 'default_medium1', 'default_medium2',
+    'default_small1', 'default_small2', 'dna', 'face', 'galaxy', 'gaussian',
+    'git_branches', 'hooks', 'hourglass', 'landscape', 'mandelbrot',
+    'minimaze', 'pixel_forest', 'pls_buy_cucats_merch', 'settlement',
+    'shish_kebab', 'sierpinski_evil', 'socket', 'starry_night',
+    'thread_of_connection', 'tiles', 'tree_of_life', 'wasteland',
+    'wasteland_oasis',
+]
 
 def run_match(bot_a, bot_b, map_name, seed=None):
     cmd = CAMBC_CMD + ['run', bot_a, bot_b, map_name]
