@@ -1,8 +1,8 @@
 # Regression Test Results
 
-**Date:** 2026-04-06 22:39:48
+**Date:** 2026-04-07 11:41:52
 **Bot:** buzzing
-**Duration:** 66s
+**Duration:** 80s
 **Verdict:** PASS
 
 ## Summary
@@ -17,13 +17,13 @@
 
 | Map | Result | Condition | Turns | Our Ti | Their Ti | Our Ax | Their Ax |
 |-----|--------|-----------|-------|--------|----------|--------|----------|
-| default_medium1 | WIN | resources | 2000 | 4970 | 4940 | 0 | 0 |
-| cold | WIN | resources | 2000 | 19300 | 0 | 0 | 0 |
-| face | LOSS | resources | 2000 | 8710 | 9800 | 0 | 0 |
-| settlement | WIN | resources | 2000 | 39650 | 0 | 0 | 0 |
-| galaxy | WIN | resources | 2000 | 14170 | 4950 | 0 | 0 |
+| default_medium1 | WIN | resources | 2000 | 4960 | 4940 | 0 | 0 |
+| cold | WIN | resources | 2000 | 19610 | 0 | 0 | 0 |
+| face | LOSS | resources | 2000 | 8600 | 11710 | 0 | 0 |
+| settlement | WIN | resources | 2000 | 37900 | 0 | 0 | 0 |
+| galaxy | WIN | resources | 2000 | 14010 | 4980 | 0 | 0 |
 
 ## Self-Play Stability
 
 - **Result:** OK (resources, turn 2000)
-- **A Ti:** 4960, **B Ti:** 4950
+- **A Ti:** 9840, **B Ti:** 9780
