@@ -189,10 +189,25 @@ Ladder results from ~10:56 onward (30 matches parsed, version boundary approxima
 | 16:27 | B       | KCPC-B           | 3-2   | LOSS   | |
 | 16:35 | A       | eidooheer*       | 5-0   | WIN    | 5-0 sweep |
 | 16:47 | A       | natto warriors   | 4-1   | WIN    | nemesis beaten again |
+| 16:56 | B       | MergeConflict    | 5-0   | LOSS   | 0-5 sweep — hard nemesis |
+| 17:06 | B       | Stratcom         | 4-1   | LOSS   | |
+| 17:16 | A       | nus robot husk   | 1-4   | LOSS   | hard nemesis (prev 0-5) |
 
-**V56 era record (36 matches): 22W-14L (61%)**
-Polska Gurom beaten once (11:47), lost once (14:07) — split.
-The Defect still a nemesis.
+**V56/V59 boundary era record (39 matches): 22W-17L (56%)**
+Polska Gurom split 1-1. The Defect + MergeConflict + nus robot husk = hard nemeses.
+
+---
+
+## V59 Era (~17:10+ approx)
+
+V59 deployed ~17:10 (74% local baseline — econ_cap fix + dead code cleanup).
+Boundary match unclear: 17:16 vs nus robot husk may be V56 or V59.
+
+| Time  | As Team | Opponent       | Score | Result | Notes |
+|-------|---------|----------------|-------|--------|-------|
+| 17:16 | A       | nus robot husk | 1-4   | LOSS   | boundary match — V56 or V59 |
+
+**V59 record so far: 0W-1L (boundary uncertain)**
 
 ---
 
