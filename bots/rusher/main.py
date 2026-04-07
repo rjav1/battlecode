@@ -129,7 +129,10 @@ class Player:
                 continue
 
         if self.role is None:
-            if self._born_round <= 2:
+            # Randomize rush threshold ±10 rounds based on builder ID (base: born > round 2)
+            rush_threshold = 2 + ((self.my_id or 0) % 21) - 10  # range: born > -8 to 12
+            rush_threshold = max(2, rush_threshold)
+            if self._born_round <= rush_threshold:
                 self.role = 'economy'
             else:
                 self.role = 'attacker'

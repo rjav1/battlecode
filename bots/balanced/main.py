@@ -338,8 +338,8 @@ class Player:
                         return
 
     def _explore(self, c, pos):
-        idx = ((self.my_id or 0) * 3 + self.explore_idx
-               + c.get_current_round() // 150) % len(DIRS)
+        rnd = c.get_current_round()
+        idx = ((self.my_id or 0) * 7 + rnd) % len(DIRS)
         d = DIRS[idx]
         dx, dy = d.delta()
         far = Position(pos.x + dx * 15, pos.y + dy * 15)

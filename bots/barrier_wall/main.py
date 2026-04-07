@@ -227,7 +227,8 @@ class Player:
             if key not in seen:
                 seen.add(key)
                 unique.append(t)
-        self.wall_targets = unique[:15]
+        count = 13 + (self.my_id or 0) % 5  # ±2 around 14 (range 13–17, clips to available)
+        self.wall_targets = unique[:count]
 
     # ------------------------------------------------------------------ Navigation
     def _nav(self, c, pos, target):

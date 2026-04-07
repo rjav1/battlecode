@@ -1,12 +1,11 @@
-"""Smart Eco bot: 1600 Elo Economy model.
+"""Smart Eco bot v2: Models a 1500+ Elo economy bot.
 
-Models a Gold/Emerald opponent:
-- 4 builders by round 30, scale to 8
-- d.opposite() conveyors (proven pattern)
+- 4 builders by round 30, 6 by 100, 7 by 200, 8 after
+- d.opposite() conveyors (proven delivery pattern)
 - Builds harvesters on ALL ore (Ti AND Ax)
-- Aggressive spending (cost+5 reserve)
+- Aggressive spending: cost+5 Ti reserve
 - Rotating exploration (direction changes every 150 rounds)
-- No military. Pure economy. Target: 20-30K Ti.
+- No military. Pure economy. Target: 20-30K Ti on balanced maps.
 """
 
 from collections import deque
@@ -36,20 +35,17 @@ class Player:
             return
         units = c.get_unit_count() - 1
         rnd = c.get_current_round()
-        # Aggressive builder scaling: 4 by round 30, 6 by 100, 8 by 200+
-        if rnd <= 30:
-            cap = 4
-        elif rnd <= 100:
-            cap = 6
-        elif rnd <= 200:
-            cap = 7
-        else:
-            cap = 8
+
+        # Builder scaling: 4 by rnd 30, 6 by rnd 100, 8 by rnd 200+
+        if rnd <= 30:    cap = 4
+        elif rnd <= 100: cap = 6
+        elif rnd <= 200: cap = 7
+        else:            cap = 8
+
         if units >= cap:
             return
         ti = c.get_global_resources()[0]
         cost = c.get_builder_bot_cost()[0]
-        # Aggressive spending: only need cost+5 reserve
         if ti < cost + 5:
             return
         pos = c.get_position()
@@ -86,7 +82,7 @@ class Player:
             self.stuck = 0
             self.explore_idx += 1
 
-        # Scan vision for ore (both Ti and Ax)
+        # Scan vision for ore
         ore_tiles = []
         passable = set()
         for t in c.get_nearby_tiles():
@@ -97,7 +93,7 @@ class Player:
                     if c.get_tile_building_id(t) is None:
                         ore_tiles.append(t)
 
-        # Build harvester on adjacent ore (Ti preferred, then Ax)
+        # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
             ore = self._best_adj_ore(c, pos)
             if ore is not None:
@@ -107,14 +103,15 @@ class Player:
                     self.target = None
                     return
 
-        # Pick nearest visible ore
+        # Pick nearest visible ore (Ti and Ax both eligible — get to ore fast)
         if ore_tiles:
             best, bd = None, 10**9
             for t in ore_tiles:
                 d = pos.distance_squared(t)
                 if d < bd:
                     best, bd = t, d
-            self.target = best
+            if best != self.target:
+                self.target = best
         elif self.target and c.is_in_vision(self.target):
             if c.get_tile_building_id(self.target) is not None:
                 self.target = None
@@ -125,29 +122,28 @@ class Player:
             self._explore(c, pos, passable)
 
     def _nav(self, c, pos, target, passable):
-        """Navigate toward target, building conveyors with d.opposite() facing."""
+        """Navigate toward target, building d.opposite() conveyors."""
         dirs = self._rank(pos, target)
         bfs_dir = self._bfs_step(pos, target, passable)
         if bfs_dir is not None and bfs_dir != dirs[0]:
             dirs = [bfs_dir] + [d for d in dirs if d != bfs_dir]
 
+        ti = c.get_global_resources()[0]
+        cc = c.get_conveyor_cost()[0]
+
         for d in dirs:
             nxt = pos.add(d)
-            if c.get_action_cooldown() == 0:
-                ti = c.get_global_resources()[0]
-                cc = c.get_conveyor_cost()[0]
-                if ti >= cc + 5:
-                    face = d.opposite()
-                    if c.can_build_conveyor(nxt, face):
-                        c.build_conveyor(nxt, face)
-                        return
+            if c.get_action_cooldown() == 0 and ti >= cc + 5:
+                face = d.opposite()
+                if c.can_build_conveyor(nxt, face):
+                    c.build_conveyor(nxt, face)
+                    return
             if c.get_move_cooldown() == 0 and c.can_move(d):
                 c.move(d)
                 return
 
-        # Road fallback for movement
+        # Road fallback for movement when conveyors blocked
         if c.get_action_cooldown() == 0:
-            ti = c.get_global_resources()[0]
             rc = c.get_road_cost()[0]
             if ti >= rc + 5:
                 for d in dirs:
@@ -156,7 +152,7 @@ class Player:
                         return
 
     def _explore(self, c, pos, passable):
-        # Rotating exploration: direction changes every 150 rounds
+        """Rotating exploration: direction changes every 150 rounds."""
         rnd = c.get_current_round()
         rotation_phase = rnd // 150
         idx = ((self.my_id or 0) * 3 + self.explore_idx + rotation_phase) % len(DIRS)
@@ -166,7 +162,7 @@ class Player:
         self._nav(c, pos, far, passable)
 
     def _best_adj_ore(self, c, pos):
-        """Find best adjacent ore tile. Prefer Ti over Ax, prefer closer to core."""
+        """Find best adjacent ore. Ti preferred; closest to core as tiebreak."""
         ti_best, ti_bd = None, 10**9
         ax_best, ax_bd = None, 10**9
         for d in Direction:

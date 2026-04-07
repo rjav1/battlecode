@@ -110,15 +110,32 @@ Notable:
 
 ---
 
-## V51 Era (~00:28+)
+## V51 Era (~00:28–00:45)
 
-V51 deployed ~00:28. First match at 00:36.
+V51 deployed ~00:28. 1 confirmed match.
 
 | Time  | As Team | Opponent     | Score | Result | Notes |
 |-------|---------|--------------|-------|--------|-------|
-| 00:36 | A       | Code Monkeys | 3-2   | WIN    | First V51 match |
+| 00:36 | A       | Code Monkeys | 3-2   | WIN    | |
 
-**V51 record so far: 1W-0L**
+**V51 final record: 1W-0L**
+
+---
+
+## V52 Era (~00:45+)
+
+V52 deployed ~00:45 (831 lines, attacker removed, chain-fix improved).
+
+| Time  | As Team | Opponent       | Score | Result | Notes |
+|-------|---------|----------------|-------|--------|-------|
+| 00:48 | A       | natto warriors  | 4-1   | WIN    | First V52 match |
+| 00:56 | B       | oslsnst         | 2-3   | WIN    | |
+| 01:05 | A       | MEOW MEOW MEOW  | 4-1   | WIN    | |
+| 01:16 | A       | Pray and Deploy | 1-4   | LOSS   | nemesis |
+
+**V52 record so far: 3W-1L (75%)**
+
+Notable: Pray and Deploy still a nemesis (beat us 0-5 in V49, 1-4 here).
 
 ---
 
@@ -129,4 +146,5 @@ V51 deployed ~00:28. First match at 00:36.
 | V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
 | V48 era | 0 | 0 | — | Superseded before any matches played |
 | V49 era | 7 | 5 | 58% | Beat Botz4Lyf; two 0-5 sweeps (N, Pray and Deploy) |
-| V51 era | 1 | 0 | 100% | 1 match only so far |
+| V51 era | 1 | 0 | 100% | 1 match only |
+| V52 era | 3 | 1 | 75% | Pray and Deploy still a nemesis |
