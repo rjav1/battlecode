@@ -1,35 +1,25 @@
 # Varied Test Results
-Record: 14W-16L-0D (47%)
+Record: 13W-7L-0D (65%)
 
 | # | Opponent | Map | Seed | Result |
 |---|----------|-----|------|--------|
-| 1 | rusher | arena | 6592 | LOSS |
-| 2 | smart_eco | shish_kebab | 1082 | LOSS |
-| 3 | sentinel_spam | shish_kebab | 4441 | WIN |
-| 4 | ladder_rush | default_large1 | 7660 | LOSS |
-| 5 | rusher | default_small1 | 4982 | LOSS |
-| 6 | turtle | butterfly | 5637 | LOSS |
-| 7 | barrier_wall | mandelbrot | 5743 | WIN |
-| 8 | ladder_eco | corridors | 3849 | LOSS |
-| 9 | fast_expand | settlement | 7442 | WIN |
-| 10 | sentinel_spam | cold | 2518 | LOSS |
-| 11 | ladder_eco | default_small2 | 6097 | WIN |
-| 12 | ladder_rush | pixel_forest | 2109 | WIN |
-| 13 | fast_expand | tree_of_life | 7219 | WIN |
-| 14 | smart_eco | arena | 4094 | LOSS |
-| 15 | smart_defense | dna | 1471 | LOSS |
-| 16 | smart_eco | default_large2 | 2861 | LOSS |
-| 17 | turtle | default_small1 | 9211 | LOSS |
-| 18 | adaptive | shish_kebab | 922 | WIN |
-| 19 | smart_defense | tree_of_life | 5805 | WIN |
-| 20 | ladder_eco | default_medium1 | 9186 | WIN |
-| 21 | rusher | landscape | 660 | WIN |
-| 22 | ladder_eco | wasteland | 2355 | WIN |
-| 23 | balanced | face | 1067 | LOSS |
-| 24 | adaptive | mandelbrot | 613 | WIN |
-| 25 | barrier_wall | default_large2 | 51 | LOSS |
-| 26 | ladder_eco | default_large1 | 1234 | WIN |
-| 27 | balanced | binary_tree | 604 | LOSS |
-| 28 | ladder_rush | gaussian | 2017 | WIN |
-| 29 | balanced | shish_kebab | 4064 | LOSS |
-| 30 | smart_eco | pixel_forest | 3883 | LOSS |
+| 1 | turtle | dna | 7405 | WIN |
+| 2 | rusher | pixel_forest | 7166 | WIN |
+| 3 | fast_expand | shish_kebab | 3239 | WIN |
+| 4 | fast_expand | cold | 4492 | LOSS |
+| 5 | sentinel_spam | default_large2 | 5924 | LOSS |
+| 6 | ladder_eco | wasteland | 6259 | WIN |
+| 7 | ladder_rush | default_large1 | 1388 | WIN |
+| 8 | balanced | pixel_forest | 8602 | WIN |
+| 9 | adaptive | landscape | 6442 | WIN |
+| 10 | rusher | galaxy | 6634 | WIN |
+| 11 | barrier_wall | wasteland | 7697 | WIN |
+| 12 | balanced | tree_of_life | 2146 | WIN |
+| 13 | balanced | default_large2 | 7392 | WIN |
+| 14 | smart_eco | default_large2 | 3206 | LOSS |
+| 15 | balanced | shish_kebab | 879 | LOSS |
+| 16 | rusher | default_small1 | 4669 | LOSS |
+| 17 | balanced | shish_kebab | 5570 | LOSS |
+| 18 | ladder_rush | galaxy | 3392 | LOSS |
+| 19 | sentinel_spam | landscape | 3081 | WIN |
+| 20 | turtle | hourglass | 8367 | WIN |

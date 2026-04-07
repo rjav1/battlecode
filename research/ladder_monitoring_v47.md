@@ -133,9 +133,62 @@ V52 deployed ~00:45 (831 lines, attacker removed, chain-fix improved).
 | 01:05 | A       | MEOW MEOW MEOW  | 4-1   | WIN    | |
 | 01:16 | A       | Pray and Deploy | 1-4   | LOSS   | nemesis |
 
-**V52 record so far: 3W-1L (75%)**
+**V52 final record: 3W-1L (75%)**
 
-Notable: Pray and Deploy still a nemesis (beat us 0-5 in V49, 1-4 here).
+Notable: Pray and Deploy still a nemesis.
+
+---
+
+## V53–V55 Era (01:16–~10:45, approximate)
+
+Versions deployed overnight. Exact boundaries unknown. V55 had reach fix that regressed to 47%.
+
+---
+
+## V56 Era (~10:45+, approximate — V52 revert)
+
+V56 = V52-equivalent revert after V55 regression. Baseline-runner running 20-match test.
+
+Ladder results from ~10:56 onward (30 matches parsed, version boundary approximate):
+
+| Time  | As Team | Opponent         | Score | Result | Notes |
+|-------|---------|------------------|-------|--------|-------|
+| 10:56 | B       | Atomic           | 0-5   | WIN    | 5-0 sweep |
+| 11:09 | B       | natto warriors   | 4-1   | LOSS   | nemesis revenge |
+| 11:16 | B       | ah               | 2-3   | WIN    | |
+| 11:25 | A       | double up        | 2-3   | LOSS   | |
+| 11:36 | A       | no_friends*      | 2-3   | LOSS   | |
+| 11:47 | B       | Polska Gurom     | 1-4   | WIN    | nemesis beaten! |
+| 11:56 | B       | N                | 2-3   | WIN    | |
+| 12:05 | B       | Cenomanum        | 0-5   | WIN    | 5-0 sweep |
+| 12:16 | A       | Chameleon        | 1-4   | LOSS   | |
+| 12:26 | A       | JustForFun       | 3-2   | WIN    | |
+| 12:35 | A       | 5goatswallowing  | 3-2   | WIN    | |
+| 12:45 | B       | nibbly-fi*       | 4-1   | LOSS   | |
+| 12:56 | A       | no_friends*      | 3-2   | WIN    | |
+| 13:07 | B       | N                | 2-3   | WIN    | |
+| 13:17 | B       | DODO             | 1-4   | WIN    | |
+| 13:27 | B       | natto warriors   | 3-2   | LOSS   | |
+| 13:37 | B       | Chameleon        | 1-4   | WIN    | |
+| 13:47 | A       | The Defect       | 1-4   | LOSS   | nemesis |
+| 13:55 | A       | Solo Gambling    | 1-4   | LOSS   | |
+| 14:07 | A       | Polska Gurom     | 1-4   | LOSS   | nemesis |
+| 14:16 | A       | nibbly-fi*       | 2-3   | LOSS   | |
+| 14:28 | A       | Fake Analysis    | 3-2   | WIN    | |
+| 14:37 | B       | DODO             | 1-4   | WIN    | |
+| 14:44 | B       | old but bronze   | 0-5   | WIN    | 5-0 sweep |
+| 14:57 | A       | New Jabees       | 4-1   | WIN    | |
+| 15:05 | A       | -                | 3-2   | WIN    | |
+| 15:18 | A       | KCPC-B           | 4-1   | WIN    | |
+| 15:26 | A       | eidooheer*       | 3-2   | WIN    | |
+| 15:37 | A       | nus robot husk   | 0-5   | LOSS   | 0-5 sweep |
+| 15:47 | A       | Chameleon        | 2-3   | LOSS   | |
+
+**V56 era record (30 matches): 18W-12L (60%)**
+
+Note: boundary approximate — some early matches may be V53–V55 era.
+Polska Gurom beaten once (11:47), lost once (14:07) — split.
+The Defect still a nemesis.
 
 ---
 
@@ -145,6 +198,8 @@ Notable: Pray and Deploy still a nemesis (beat us 0-5 in V49, 1-4 here).
 |---------|------|--------|------|-------|
 | V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
 | V48 era | 0 | 0 | — | Superseded before any matches played |
-| V49 era | 7 | 5 | 58% | Beat Botz4Lyf; two 0-5 sweeps (N, Pray and Deploy) |
+| V49 era | 7 | 5 | 58% | Beat Botz4Lyf; two 0-5 sweeps |
 | V51 era | 1 | 0 | 100% | 1 match only |
-| V52 era | 3 | 1 | 75% | Pray and Deploy still a nemesis |
+| V52 era | 3 | 1 | 75% | Strong |
+| V53–V55 era | ? | ? | ~47%? | V55 regressed, reverted |
+| V56 era (~30 matches) | 18 | 12 | 60% | V52 revert, boundary approx |
