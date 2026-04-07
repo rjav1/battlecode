@@ -530,7 +530,7 @@ class Player:
         if area >= 1600:
             # Large maps: sector-based from core, target map edge, rotate slowly
             # Multiply ID by prime to spread sequential IDs across sectors
-            sector = (mid * 7 + self.explore_idx * 3 + rnd // 200) % len(DIRS)
+            sector = (mid * 7 + self.explore_idx * 3 + rnd // 100) % len(DIRS)
             d = DIRS[sector]
             dx, dy = d.delta()
             if self.core_pos:
