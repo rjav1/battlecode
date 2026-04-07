@@ -83,7 +83,30 @@ V49 era: 1 match, 1 loss. 0-5 sweep loss — only 1 data point so far.
 
 ---
 
-## Check-in #5 — (pending)
+## Check-in #5 — ~00:30
+
+12 V49 matches now complete. Full V49 results:
+
+| Time  | As Team | Opponent          | Score | Result | Notes |
+|-------|---------|-------------------|-------|--------|-------|
+| 22:37 | B       | Pray and Deploy   | 5-0   | LOSS   | 0-5 sweep |
+| 22:46 | A       | BulkX             | 3-2   | WIN    | |
+| 22:55 | B       | MEOW MEOW MEOW    | 1-4   | WIN    | |
+| 23:05 | B       | Quwaky            | 4-1   | LOSS   | |
+| 23:16 | B       | N                 | 5-0   | LOSS   | 0-5 sweep |
+| 23:26 | A       | Dino              | 2-3   | LOSS   | |
+| 23:34 | A       | 5goatswallowing   | 4-1   | WIN    | |
+| 23:45 | B       | Botz4Lyf          | 2-3   | WIN    | NEMESIS BEATEN (was 0-5 at 21:35) |
+| 23:57 | B       | Chameleon         | 4-1   | LOSS   | |
+| 00:06 | B       | Atomic            | 1-4   | WIN    | |
+| 00:16 | B       | MWLP              | 3-2   | LOSS   | |
+| 00:26 | B       | O_O               | 2-3   | WIN    | |
+
+**V49 record: 7W-5L (58%)**
+
+Notable:
+- Beat Botz4Lyf 3-2 — was a nemesis (swept us 0-5 at 21:35)
+- Two 0-5 sweep losses: Pray and Deploy, N
 
 ---
 
@@ -93,4 +116,4 @@ V49 era: 1 match, 1 loss. 0-5 sweep loss — only 1 data point so far.
 |---------|------|--------|------|-------|
 | V47 confirmed era (22:00–22:26) | 2 | 1 | 67% | Lost to The Defect 2-3 at boundary |
 | V48 era | 0 | 0 | — | Superseded before any matches played |
-| V49 era | 0 | 1 | 0% | 0-5 swept by Pray and Deploy — 1 match only |
+| V49 era | 7 | 5 | 58% | Beat Botz4Lyf; two 0-5 sweeps (N, Pray and Deploy) |
