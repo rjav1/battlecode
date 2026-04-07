@@ -183,10 +183,14 @@ Ladder results from ~10:56 onward (30 matches parsed, version boundary approxima
 | 15:26 | A       | eidooheer*       | 3-2   | WIN    | |
 | 15:37 | A       | nus robot husk   | 0-5   | LOSS   | 0-5 sweep |
 | 15:47 | A       | Chameleon        | 2-3   | LOSS   | |
+| 15:55 | B       | eidooheer*       | 3-2   | LOSS   | |
+| 16:08 | B       | chicken tikka masala | 2-3 | WIN  | |
+| 16:16 | A       | Cenomanum        | 3-2   | WIN    | |
+| 16:27 | B       | KCPC-B           | 3-2   | LOSS   | |
+| 16:35 | A       | eidooheer*       | 5-0   | WIN    | 5-0 sweep |
+| 16:47 | A       | natto warriors   | 4-1   | WIN    | nemesis beaten again |
 
-**V56 era record (30 matches): 18W-12L (60%)**
-
-Note: boundary approximate — some early matches may be V53–V55 era.
+**V56 era record (36 matches): 22W-14L (61%)**
 Polska Gurom beaten once (11:47), lost once (14:07) — split.
 The Defect still a nemesis.
 

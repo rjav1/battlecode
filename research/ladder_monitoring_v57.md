@@ -9,7 +9,17 @@
 
 ## V57 Matches
 
-*(No V57 matches yet — first matchmaking cycle ~16:13+)*
+| Result | Score | Opponent | Opp Elo | Elo Delta | Time |
+|--------|-------|----------|---------|-----------|------|
+| LOSS | 0-5 | MergeConflict | 1521 | -16.4 | 16:56 |
+| WIN | 4-1 | natto warriors | ~1499 | +9.2 | 16:47 |
+| WIN | 5-0 | eidooheerfmaet | ~1507 | +16.2 | 16:35 |
+| LOSS | 2-3 | KCPC-B | ~1499 | -3.6 | 16:27 |
+| WIN | 3-2 | Cenomanum | ~1491 | +2.6 | 16:16 |
+
+**V57/V58 total: 3W-2L (60%), current Elo ~1513**
+
+*** SWEEP LOSS: 0-5 vs MergeConflict (1521 Elo, 1598 matches played) — strong opponent ***
 
 ---
 
