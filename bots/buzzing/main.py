@@ -52,9 +52,6 @@ class Player:
         self.harvesters_built = 0
         self._enemy_dir = None
         self._enemy_core = None
-        self.fixing_chain = False
-        self.fix_path = []
-        self.fix_idx = 0
         self._wall_density = None
         self._ore_density = None  # ore tiles / total tiles in vision (ore-rich map detection)
         self._claimed_pos = None    # Position of our placed claim marker
@@ -328,29 +325,6 @@ class Player:
             if built:
                 return
 
-        # Barrier placement near core
-        if (rnd >= 80 and self.core_pos
-                and pos.distance_squared(self.core_pos) <= 20
-                and c.get_action_cooldown() == 0
-                and c.get_global_resources()[0] >= 50):
-            if self._build_barriers(c, pos):
-                return
-
-        # Periodic chain-fix retrigger: on maze maps re-arm every 100 rounds
-        # if we have harvesters but chain-fix isn't already running
-        if (not self.fixing_chain
-                and self.harvesters_built >= 1
-                and len(self.fix_path) >= 2
-                and rnd % 100 == 0 and rnd <= 500
-                and self._wall_density is not None and self._wall_density > 0.20):
-            self.fixing_chain = True
-            self.fix_idx = len(self.fix_path) - 1
-
-        # Chain-fix mode: walk back fixing conveyors
-        if self.fixing_chain and self.core_pos:
-            self._fix_chain(c, pos)
-            return
-
         # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
             ore = self._best_adj_ore(c, pos)
@@ -363,22 +337,6 @@ class Player:
                     self._claimed_pos = None
                     self._marker_placed = False
                     self._bridge_target = ore  # attempt bridge shortcut next round
-                    # Chain-fix for first 4 harvesters if path is winding
-                    if (self.core_pos and len(self.fix_path) >= 4
-                            and self.harvesters_built <= 4):
-                        changes = 0
-                        for i in range(1, len(self.fix_path) - 1):
-                            d1 = self.fix_path[i-1].direction_to(self.fix_path[i])
-                            d2 = self.fix_path[i].direction_to(self.fix_path[i+1])
-                            if d1 != d2:
-                                changes += 1
-                        if changes >= 2:
-                            self.fixing_chain = True
-                            self.fix_idx = len(self.fix_path) - 1
-                        else:
-                            self.fix_path = []
-                    else:
-                        self.fix_path = []
                     return
 
         # Pick ore: wall-density-adaptive scoring
@@ -411,7 +369,6 @@ class Player:
                 if score < bd:
                     best, bd = t, score
             if best != self.target:
-                self.fix_path = []
                 self._marker_placed = False
                 self._claimed_pos = None
             self.target = best
@@ -484,8 +441,6 @@ class Player:
                             c.build_conveyor(nxt, face)
                             return
                 if c.get_move_cooldown() == 0 and c.can_move(d):
-                    if self.target is not None and len(self.fix_path) < 30:
-                        self.fix_path.append(pos)
                     c.move(d)
                     return
 
@@ -573,118 +528,6 @@ class Player:
             explore_reserve = 5
         self._nav(c, pos, far, passable, ti_reserve=explore_reserve)
 
-    # ------------------------------------------------------------ Barriers
-    def _build_barriers(self, c, pos):
-        """Place barriers on the enemy-facing side of core, 2-3 tiles out."""
-        enemy_dir = self._get_enemy_direction(c)
-        if not enemy_dir:
-            return False
-
-        # Count existing nearby barriers
-        barrier_count = 0
-        for eid in c.get_nearby_buildings():
-            try:
-                if (c.get_entity_type(eid) == EntityType.BARRIER
-                        and c.get_team(eid) == c.get_team()):
-                    barrier_count += 1
-            except Exception:
-                pass
-        ti = c.get_global_resources()[0]
-        max_barriers = 6 if ti < 500 else (10 if ti < 1000 else 15)
-        if barrier_count >= max_barriers:
-            return False
-
-        if ti < c.get_barrier_cost()[0] + 15:
-            return False
-
-        dx, dy = enemy_dir.delta()
-        # Perpendicular directions for spreading the wall
-        perp_left = enemy_dir.rotate_left().rotate_left()
-        perp_right = enemy_dir.rotate_right().rotate_right()
-
-        # Try positions 2-3 tiles from core toward enemy, spread perpendicular
-        # Skip every other perpendicular offset to leave gaps for builders
-        for dist in (3, 2):
-            cx = self.core_pos.x + dx * dist
-            cy = self.core_pos.y + dy * dist
-            center = Position(cx, cy)
-
-            for offset in (0, -2, 2, -1, 1):
-                pdx, pdy = (perp_right if offset > 0 else perp_left).delta()
-                abs_off = abs(offset)
-                bp = Position(center.x + pdx * abs_off, center.y + pdy * abs_off)
-
-                # Skip odd offsets to leave gaps
-                if abs(offset) == 1:
-                    continue
-
-                if not c.is_in_vision(bp):
-                    continue
-                if pos.distance_squared(bp) > 2:
-                    continue
-                try:
-                    if c.can_build_barrier(bp):
-                        c.build_barrier(bp)
-                        return True
-                except Exception:
-                    pass
-        return False
-
-    # --------------------------------------------------------- Chain fix
-    def _fix_chain(self, c, pos):
-        """Walk back along recorded path, fixing conveyors behind us."""
-        if self.fix_idx < 0:
-            self.fixing_chain = False
-            self.fix_path = []
-            return
-
-        # Fix the tile BEHIND us (fix_idx + 1) — within action radius
-        behind_idx = self.fix_idx + 1
-        if behind_idx < len(self.fix_path) and c.get_action_cooldown() == 0:
-            behind_pos = self.fix_path[behind_idx]
-            if pos.distance_squared(behind_pos) <= 2 and c.is_in_vision(behind_pos):
-                correct_facing = behind_pos.direction_to(self.fix_path[self.fix_idx])
-                if correct_facing != Direction.CENTRE:
-                    bid = c.get_tile_building_id(behind_pos)
-                    if bid is not None:
-                        try:
-                            et = c.get_entity_type(bid)
-                            tm = c.get_team(bid)
-                            if tm == c.get_team() and et == EntityType.CONVEYOR:
-                                if c.get_direction(bid) != correct_facing:
-                                    old_dir = c.get_direction(bid)
-                                    c.destroy(behind_pos)
-                                    if c.can_build_conveyor(behind_pos, correct_facing):
-                                        c.build_conveyor(behind_pos, correct_facing)
-                                    else:
-                                        # Fallback: restore
-                                        c.build_conveyor(behind_pos, old_dir)
-                        except Exception:
-                            pass
-
-        # Advance along path toward core
-        target = self.fix_path[self.fix_idx]
-        if pos == target:
-            self.fix_idx -= 1
-            if self.fix_idx < 0:
-                self.fixing_chain = False
-                self.fix_path = []
-            return
-
-        d = pos.direction_to(target)
-        if d == Direction.CENTRE:
-            self.fix_idx -= 1
-            return
-        for try_d in [d, d.rotate_left(), d.rotate_right(),
-                      d.rotate_left().rotate_left(), d.rotate_right().rotate_right()]:
-            if c.get_move_cooldown() == 0 and c.can_move(try_d):
-                c.move(try_d)
-                return
-
-        # Stuck — bail
-        self.fixing_chain = False
-        self.fix_path = []
-
     # ------------------------------------------------------------ Helpers
     def _check_is_maze(self):
         """Maze/fragmented map detection using wall density OR ore density.
@@ -697,18 +540,6 @@ class Player:
         wall_maze = self._wall_density is not None and self._wall_density > 0.15
         ore_rich = self._ore_density is not None and self._ore_density > 0.12
         return wall_maze or ore_rich
-
-    def _check_needs_low_reserve(self):
-        """Whether to lower explore Ti reserve for maze-like navigation.
-
-        More conservative than _check_is_maze: requires BOTH high wall density
-        AND ore richness to avoid false-positives on maps like cold (has diamond
-        walls creating local wall clusters near core) that need high explore_reserve
-        to prevent wasteful conveyor sprawl far from ore.
-        """
-        wall_maze = self._wall_density is not None and self._wall_density > 0.15
-        ore_rich = self._ore_density is not None and self._ore_density > 0.08
-        return wall_maze and ore_rich
 
     def _walk_to(self, c, pos, target):
         d = pos.direction_to(target)

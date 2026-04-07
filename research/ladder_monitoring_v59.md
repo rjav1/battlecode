@@ -11,13 +11,21 @@
 
 | Result | Score | Opponent | Opp Elo (before) | Elo Delta | Time |
 |--------|-------|----------|-----------------|-----------|------|
+| WIN | 4-1 | Pray and Deploy | ~1440 | +2 | 19:25 |
+| LOSS | 3-2 | Quwaky | ~1460 | -5 | 19:15 |
+| WIN | 3-2 | N | ~1450 | +3 | 19:06 |
+| WIN | 1-4 | MWLP | ~1455 | +3 | 18:57 |
+| LOSS | 3-2 | Code Monkeys | ~1475 | -4 | 18:46 |
+| LOSS | 1-4 | binary bros | ~1475 | -8 | 18:35 |
+| WIN | 3-2 | Cenomanum | ~1460 | +3 | 18:27 |
+| LOSS | 3-2 | oslsnst | ~1460 | -4 | 18:17 |
 | WIN | 2-3 | Botz4Lyf | 1455 | +2.6 | 18:06 |
 | LOSS | 1-4 | natto warriors | 1477 | -9.6 | 17:57 |
 | WIN | 3-2 | O_O | 1477 | +3.3 | 17:47 |
 | LOSS | 1-4 | KCPC-B | 1485 | -9.5 | 17:39 |
 | LOSS | 1-4 | Chameleon | 1483 | -10.1 | 17:26 |
 
-**V59 total: 2W-3L (40%), current Elo ~1470**
+**V59 total: 6W-7L (46%), current Elo ~1468**
 
 ---
 
@@ -54,12 +62,14 @@ V57/V58 total: 3W-3L (50%), Elo dropped from ~1529 → ~1503
 
 | Check Time | New Matches | V59 Record | Elo | Notes |
 |------------|-------------|------------|-----|-------|
-| 18:00 | 1 V59 | 1W-4L | ~1458 | LOSS 1-4 vs natto warriors (17:57) |
-| 17:50 | 1 V59 | 1W-3L | ~1468 | WIN 3-2 vs O_O (17:47) — only V59 win so far |
-| 17:41 | 1 V59 | 0W-2L | ~1465 | LOSS 1-4 vs KCPC-B (17:39) |
-| 17:28 | 1 V59 | 0W-1L | ~1484 | LOSS 1-4 vs Chameleon (1483) — first V59 match |
-| 17:18 | 0 V59 | 0W-0L | ~1494 | Still playing V58 — nus robot husk LOSS 1-4 (V58, -9.5) |
-| 17:10 | 0 V59 | 0W-0L | ~1503 | V59 just deployed |
+| 19:28 | 7 | 6W-7L | ~1468 | WIN 4-1 Pray+Deploy (19:25), LOSS vs Quwaky (19:15), WIN 3-2 N (19:06), WIN vs MWLP (18:57), LOSS vs Code Monkeys (18:46), LOSS 1-4 binary bros (18:35), WIN 3-2 Cenomanum (18:27) |
+| 18:20 | 2 | 2W-5L | ~1461 | LOSS 3-2 oslsnst (18:17), WIN 2-3 Botz4Lyf (18:06, as B scored 3) |
+| 18:00 | 1 | 1W-4L | ~1458 | LOSS 1-4 vs natto warriors (17:57) |
+| 17:50 | 1 | 1W-3L | ~1468 | WIN 3-2 vs O_O (17:47) — only V59 win so far |
+| 17:41 | 1 | 0W-2L | ~1465 | LOSS 1-4 vs KCPC-B (17:39) |
+| 17:28 | 1 | 0W-1L | ~1484 | LOSS 1-4 vs Chameleon (1483) — first V59 match |
+| 17:18 | 0 | 0W-0L | ~1494 | Still playing V58 — nus robot husk LOSS 1-4 (V58, -9.5) |
+| 17:10 | 0 | 0W-0L | ~1503 | V59 just deployed |
 
 ---
 

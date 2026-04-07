@@ -12,9 +12,15 @@
 
 | Result | Score | Opponent | Opp Elo | Elo Delta | Time |
 |--------|-------|----------|---------|-----------|------|
+| WIN | 4-1 | Pray and Deploy | 1461 | +9.3 | 19:25 |
+| LOSS | 2-3 | Quwaky | 1468 | -3.3 | 19:15 |
+| WIN | 3-2 | N | 1483 | +3.9 | 19:06 |
+| WIN | 4-1 | MWLP | 1461 | +9.8 | 18:57 |
+| LOSS | 2-3 | Code Monkeys | 1459 | -3.3 | 18:46 |
+| LOSS | 1-4 | binary bros | 1450 | -10.2 | 18:35 |
 | WIN | 3-2 | Cenomanum | 1469 | +3.3 | 18:27 |
 
-**V60 total: 1W-0L (100%), current Elo ~1470**
+**V60 total: 4W-3L (57%), current Elo ~1477**
 
 ---
 
