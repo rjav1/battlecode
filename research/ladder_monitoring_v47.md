@@ -205,9 +205,11 @@ Boundary match unclear: 17:16 vs nus robot husk may be V56 or V59.
 
 | Time  | As Team | Opponent       | Score | Result | Notes |
 |-------|---------|----------------|-------|--------|-------|
-| 17:16 | A       | nus robot husk | 1-4   | LOSS   | boundary match — V56 or V59 |
+| 17:16 | A       | nus robot husk | 1-4   | LOSS   | V58 era (per v59 monitor file) |
+| 17:26 | A       | Chameleon      | 1-4   | LOSS   | First confirmed V59 match |
+| 17:39 | A       | KCPC-B         | 1-4   | LOSS   | |
 
-**V59 record so far: 0W-1L (boundary uncertain)**
+**V59 record so far: 0W-2L — rough start**
 
 ---
 
