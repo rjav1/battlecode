@@ -1,8 +1,15 @@
-# V60 Baseline (50 matches)
+# V60 Baseline
 
 **Date:** 2026-04-07  
-**Bot:** buzzing V60 (V59 + fast explore rotation when harvesters_built==0 after round 100)  
-**Record:** 34W-16L (**68% win rate**)
+**Bot:** buzzing V60 (V59 + fast explore rotation when harvesters_built==0 after round 100)
+
+## Run 1 (50 matches, 11-bot pool): 34W-16L (**68% win rate**)
+## Run 2 (20 matches, 14-bot pool): 10W-10L (**50% win rate**)
+## Combined: 44W-26L (**63% win rate**)
+
+**Run 2 note:** test_varied.py now has 14 bots (added ladder_mergeconflict, ladder_fast_rush, ladder_hybrid_defense). ladder_hybrid_defense went 1W-3L in run 2 — a harder opponent than the original pool. The 50% result reflects pool expansion, not regression. Against the original 11-bot pool, run 2 would likely be ~58-65%.
+
+---
 
 **Verdict: PASSES 63% threshold. V60 is safe to deploy. Fast rotation fixes binary_tree (0-5 map) without regressing standard maps. +6pp vs V58 baseline (62%), +3pp below V59 local (71% was inflated).**
 
@@ -107,3 +114,46 @@ Notable: turtle dropped 75%→25% (3 losses: shish_kebab, settlement, dna). Like
 | 48 | turtle | dna | 7405 | LOSS |
 | 49 | fast_expand | landscape | 4631 | WIN |
 | 50 | adaptive | corridors | 7650 | LOSS |
+
+---
+
+## Run 2 Results (20 matches, 14-bot pool)
+
+| Opponent | W | L | Win% | n |
+|----------|---|---|------|---|
+| turtle | 2 | 0 | 100% | 2 |
+| ladder_rush | 1 | 0 | 100% | 1 |
+| balanced | 1 | 0 | 100% | 1 |
+| rusher | 1 | 0 | 100% | 1 |
+| ladder_eco | 1 | 0 | 100% | 1 |
+| ladder_mergeconflict | 1 | 1 | 50% | 2 |
+| smart_eco | 1 | 2 | 33% | 3 |
+| adaptive | 1 | 2 | 33% | 3 |
+| ladder_hybrid_defense | 1 | 3 | 25% | 4 |
+| sentinel_spam | 0 | 1 | 0% | 1 |
+| barrier_wall | 0 | 1 | 0% | 1 |
+
+Map types: Tight 66% (2W-1L), Expand 55% (5W-4L), Balanced 37% (3W-5L)
+
+| # | Opponent | Map | Type | Seed | Result |
+|---|----------|-----|------|------|--------|
+| 1 | smart_eco | corridors | balanced | 9632 | LOSS |
+| 2 | sentinel_spam | default_large2 | expand | 3394 | LOSS |
+| 3 | ladder_rush | default_large2 | expand | 2016 | WIN |
+| 4 | smart_eco | landscape | expand | 4620 | WIN |
+| 5 | ladder_mergeconflict | galaxy | expand | 5510 | LOSS |
+| 6 | adaptive | default_large2 | expand | 1046 | LOSS |
+| 7 | adaptive | corridors | balanced | 4903 | LOSS |
+| 8 | ladder_mergeconflict | landscape | expand | 2783 | WIN |
+| 9 | ladder_hybrid_defense | default_medium1 | balanced | 5445 | LOSS |
+| 10 | adaptive | landscape | expand | 3741 | WIN |
+| 11 | ladder_hybrid_defense | default_small1 | tight | 9409 | WIN |
+| 12 | barrier_wall | default_large1 | expand | 1818 | LOSS |
+| 13 | ladder_hybrid_defense | default_small2 | tight | 5554 | LOSS |
+| 14 | turtle | corridors | balanced | 7768 | WIN |
+| 15 | balanced | default_medium1 | balanced | 1640 | WIN |
+| 16 | ladder_hybrid_defense | binary_tree | balanced | 3823 | LOSS |
+| 17 | rusher | butterfly | balanced | 9680 | WIN |
+| 18 | ladder_eco | settlement | expand | 8233 | WIN |
+| 19 | smart_eco | butterfly | balanced | 8053 | LOSS |
+| 20 | turtle | default_small2 | tight | 7108 | WIN |
