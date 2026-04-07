@@ -528,7 +528,7 @@ class Player:
         area = w * h
 
         if area >= 1600:
-            # Large maps: sector-based from core, target interior (not far edge)
+            # Large maps: sector-based from core, target map edge, rotate slowly
             # Multiply ID by prime to spread sequential IDs across sectors
             sector = (mid * 7 + self.explore_idx * 3 + rnd // 100) % len(DIRS)
             d = DIRS[sector]
@@ -537,7 +537,7 @@ class Player:
                 cx, cy = self.core_pos.x, self.core_pos.y
             else:
                 cx, cy = pos.x, pos.y
-            reach = min(w, h) // 2
+            reach = max(w, h)
             tx = max(0, min(w - 1, cx + dx * reach))
             ty = max(0, min(h - 1, cy + dy * reach))
             far = Position(tx, ty)
