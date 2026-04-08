@@ -149,6 +149,21 @@
 | 21:37 | WIN | 3-2 | N | Team B; now 3W-2L vs them |
 | 21:47 | WIN | 4-1 | Chameleon | Team B; now 2W-1L vs them |
 | 21:57 | LOSS | 1-4 | Dino | FIRST loss to Dino; was 4W-0L now 4W-1L |
+| 22:06 | LOSS | 2-3 | Pray and Deploy | Now 1W-4L vs them; ongoing nemesis |
+
+---
+
+## Current Status (2026-04-08 ~22:10 UTC)
+
+| Metric | Value |
+|--------|-------|
+| **Actual Elo** | **1461** (Silver) |
+| **Rank** | #144 of 579 |
+| **Matches played** | 408 |
+| **Target** | 1600 (Emerald) |
+| **Gap** | 139 Elo |
+
+**Recent 10-match record:** 6W-4L (60%) — slight upswing after 7-loss streak
 
 ---
 
