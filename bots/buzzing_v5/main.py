@@ -1,4 +1,9 @@
-"""v42: Bridge-first harvester delivery — chain-join > core bridge for ALL harvesters.
+"""v5: Gunner rush on tight maps (area<=625). One builder advances toward enemy core
+via roads at round 100+. When within r²<=13 of enemy core with clear direction,
+places gunner facing enemy + 1 ammo-feed conveyor. Gunner fires 10 dmg/shot.
+Core=500 HP -> 50 shots needed -> ~100 rounds to kill with steady ammo.
+
+v42: Bridge-first harvester delivery — chain-join > core bridge for ALL harvesters.
 Ax tiebreaker stuck detection (give up after 5 rounds stuck).
 
 v39: Late-game Ax tiebreaker — one builder builds Ax harvester+foundry at round 1800+.
@@ -59,6 +64,8 @@ class Player:
         self._bridge_target = None       # ore tile needing a bridge shortcut next round
         self._sentinel_harv = None       # harvester pos for sentinel auto-split
         self._sentinel_step = 0          # 0=need conveyor, 1=need sentinel
+        self._is_rusher = False          # this builder is the designated rusher
+        self._rush_done = False          # rusher has placed the gunner
 
     def run(self, c: Controller) -> None:
         t = c.get_entity_type()
@@ -68,6 +75,8 @@ class Player:
             self._builder(c)
         elif t == EntityType.SENTINEL:
             self._sentinel(c)
+        elif t == EntityType.GUNNER:
+            self._gunner(c)
 
     def _core(self, c):
         # Detect map size on first round
@@ -152,6 +161,14 @@ class Player:
             except Exception:
                 continue
 
+    def _gunner(self, c):
+        """Rush gunner: fire at any target on forward ray whenever loaded."""
+        if c.get_action_cooldown() != 0 or c.get_ammo_amount() < 2:
+            return
+        target = c.get_gunner_target()
+        if target and c.can_fire(target):
+            c.fire(target)
+
     def _builder(self, c):
         pos = c.get_position()
 
@@ -188,6 +205,40 @@ class Player:
             self.target = None
             self.stuck = 0
             self.explore_idx += 1
+
+        # ---- BUILDER RUSH (tight maps, area <= 625) ---------------------------
+        # Builder attack: stand adjacent to enemy core tile, fire() = 2 HP dmg, 2 Ti cost.
+        # Core has 500 HP → 250 attacks. At 1 action/round: ~250 rounds after arrival.
+        # Passive Ti income: 10 Ti/4 rounds = 2.5 Ti/round → enough to sustain 1 attack/round.
+        # Builder id%5==1 is the designated rusher. At round 100+ it walks via roads
+        # toward the enemy core center, building only roads (cheap). Once adjacent
+        # (within action r²=2), it fires at a core tile every round it can afford.
+        if getattr(self, 'map_mode', None) == "tight":
+            if (self.my_id or 0) % 5 == 1:
+                self._is_rusher = True
+            if self._is_rusher and rnd >= 100:
+                enemy_core = self._get_enemy_core_pos(c)
+                if enemy_core:
+                    # Try to fire at any adjacent core tile first
+                    if c.get_action_cooldown() == 0:
+                        ti = c.get_global_resources()[0]
+                        if ti >= 4:  # 2 Ti cost + small reserve
+                            for d in DIRS:
+                                target = pos.add(d)
+                                try:
+                                    if c.can_fire(target):
+                                        c.fire(target)
+                                        self._rush_done = True
+                                        return
+                                except Exception:
+                                    pass
+                    # Not adjacent to core yet — walk toward enemy core via roads
+                    if not self._rush_done:
+                        self._walk_to(c, pos, enemy_core)
+                        return
+                    # Rush done (attacked before) — keep attacking if adjacent, else idle
+                    return
+        # ---- END RUSH ---------------------------------------------------------
 
         # Scan vision
         ore_tiles = []
@@ -273,7 +324,7 @@ class Player:
 
         # Bridge shortcut: after building harvester, bridge to nearest infra or core
         # Priority: chain-join (nearest allied conveyor/bridge closer to core) > core tile
-        # Skip bridge if sentinel auto-split is active (sentinel takes priority)
+        # Skip bridge if sentinel auto-split is pending (sentinel takes priority this round)
         if (self._bridge_target and self.core_pos
                 and not self._sentinel_harv
                 and c.get_action_cooldown() == 0):
@@ -329,21 +380,16 @@ class Player:
             if built:
                 return
 
-        # Sentinel auto-split: build conveyor + sentinel adjacent to harvester
-        # Builder stays near harvester to complete the 2-step build
+        # Sentinel auto-split: build conveyor + sentinel adjacent to last harvester.
+        # No walk-back — only act if already adjacent. Max 1 per builder (_sentinel_done).
         if (self._sentinel_harv and self.core_pos):
             harv_pos = self._sentinel_harv
             enemy_dir = self._get_enemy_direction(c)
-            if not enemy_dir:
+            if not enemy_dir or pos.distance_squared(harv_pos) > 2:
+                # Not adjacent or no enemy dir — cancel, don't waste time walking back
                 self._sentinel_harv = None
                 self._sentinel_step = 0
-            elif pos.distance_squared(harv_pos) > 2:
-                # Walk back to harvester using roads (don't lay more conveyors)
-                self._nav(c, pos, harv_pos, passable, ti_reserve=5, use_roads=True)
-                return
-            elif c.get_action_cooldown() != 0:
-                return  # Wait for cooldown near harvester
-            else:
+            elif c.get_action_cooldown() == 0:
                 ti = c.get_global_resources()[0]
                 if self._sentinel_step == 0:
                     # Step 0: build conveyor adjacent to harvester, facing outward
@@ -360,7 +406,7 @@ class Player:
                                 self._sentinel_conv_dir = pd
                                 self._sentinel_conv_pos = conv_pos
                                 return
-                        self._sentinel_harv = None
+                        self._sentinel_harv = None  # no valid spot, give up
                 elif self._sentinel_step == 1:
                     # Step 1: build sentinel beyond the conveyor
                     sc = c.get_sentinel_cost()[0]
@@ -373,8 +419,8 @@ class Player:
                                 self._sentinel_harv = None
                                 self._sentinel_step = 0
                                 return
-                        self._sentinel_harv = None
-                        self._sentinel_step = 0
+                    self._sentinel_harv = None
+                    self._sentinel_step = 0
 
         # Build harvester on adjacent ore
         if c.get_action_cooldown() == 0:
@@ -388,10 +434,10 @@ class Player:
                     self._claimed_pos = None
                     self._marker_placed = False
                     self._bridge_target = ore  # attempt bridge shortcut next round
-                    # Trigger sentinel auto-split: late game, high Ti, once per builder
+                    # Trigger sentinel auto-split after 3rd harvester, once per builder
                     if (not hasattr(self, '_sentinel_done')
-                            and rnd >= 500
-                            and ti >= 500):
+                            and self.harvesters_built >= 3
+                            and ti >= c.get_sentinel_cost()[0] + 30):
                         self._sentinel_harv = ore
                         self._sentinel_step = 0
                         self._sentinel_done = True

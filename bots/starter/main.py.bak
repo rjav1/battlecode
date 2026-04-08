@@ -1,0 +1,23 @@
+from cambc import Controller, Direction, EntityType, Environment, Position
+
+class Player:
+    def run(self, c: Controller):
+        if c.get_entity_type() != EntityType.CORE:
+            return
+        if c.get_current_round() == 1:
+            w, h = c.get_map_width(), c.get_map_height()
+            area = w * h
+            short = min(w, h)
+            mode = 'tight' if (area <= 625 or short <= 22) else ('expand' if area >= 1600 else 'balanced')
+            
+            # Count ore tiles
+            ore_ti = 0
+            ore_ax = 0
+            for pos in c.get_nearby_tiles():
+                env = c.get_tile_env(pos)
+                if env == Environment.ORE_TITANIUM:
+                    ore_ti += 1
+                elif env == Environment.ORE_AXIONITE:
+                    ore_ax += 1
+            import sys
+            print(f'MAP: {w}x{h} area={area} mode={mode} Ti_ore={ore_ti} Ax_ore={ore_ax}', file=sys.stderr)
