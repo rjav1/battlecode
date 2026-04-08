@@ -49,6 +49,7 @@
 | 05:07 | LOSS | 1-4 | nus robot husk | We were Team B; 2nd loss to nus robot |
 | 05:16 | LOSS | 2-3 | One More Time | Reversal — beat them 3-2 at 02:36 |
 | 05:26 | LOSS | 1-4 | O_O | New nemesis; 3rd straight loss |
+| 05:36 | WIN | 4-1 | Atomic | We were Team B; recovery |
 
 ---
 
